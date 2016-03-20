@@ -2,9 +2,10 @@
   "name": "Purecheck",
   "version": "0.0.1",
   "description": "Checks JS code for pure functions",
-  "main": "main.js",
+  "main": "bin/purecheck.js",
   "scripts": {
-    "build": "babel src -d bin -s"
+    "build": "babel src -d bin -s",
+	"start": "node bin/main"
   },
   "author": "Luis Crespo",
   "license": "ISC",
