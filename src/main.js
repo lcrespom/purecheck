@@ -9,7 +9,6 @@ process.stdin.on('end', function() {
 });
 process.stdin.resume();
 
-
 function processJS(buf) {
 	return buf.toUpperCase();
 }
