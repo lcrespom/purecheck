@@ -1,4 +1,4 @@
-# purecheck
+# Purecheck
 Purecheck is inspired by [this article](http://blog.jenkster.com/2015/12/what-is-functional-programming.html).
 Purecheck scans JavaScript code and looks for function declarations, checking whether they are pure functions or not.
 For a function to be pure, it must:
