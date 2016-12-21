@@ -4,20 +4,20 @@ import { SourceLocation,
 	ExpressionStatement, AssignmentExpression,
 	FunctionDeclaration, VariableDeclaration } from 'estree';
 
+
 export default purecheck;
 
-
-type NameMap = {
+export type NameMap = {
 	[name: string]: boolean;
 };
 
-interface FPError {
+export interface FPError {
 	type: string;
 	ident: string;
 	loc: SourceLocation | undefined;
 }
 
-interface FunctionReport {
+export interface FunctionReport {
 	loc: SourceLocation | undefined;
 	id: string | null;
 	locals: NameMap;
