@@ -1,34 +1,42 @@
 import * as esprima from 'esprima';
-import { FunctionDeclaration, SourceLocation } from 'estree';
+import { SourceLocation,
+	Statement,
+	ExpressionStatement, AssignmentExpression,
+	FunctionDeclaration, VariableDeclaration } from 'estree';
 
 export default purecheck;
+
+
+type NameMap = {
+	[name: string]: boolean;
+};
 
 interface FPError {
 	type: string;
 	ident: string;
-	loc: SourceLocation;
+	loc: SourceLocation | undefined;
 }
 
-function purecheck(code) {
+interface FunctionReport {
+	loc: SourceLocation | undefined;
+	id: string | null;
+	locals: NameMap;
+	sideCauses: FPError[];
+	sideEffects: FPError[];
+}
+
+
+function purecheck(code: string): FunctionReport[] {
 	let tree = esprima.parse(code, {
 		loc: true,
 		sourceType: 'module'
 	});
-	let funcs = filterTree(tree.body, node => node.type == 'FunctionDeclaration');
-	let checks = funcs.map(func => checkFunc(func));
-	return checks;
+	return tree.body
+		.filter(node => node.type == 'FunctionDeclaration')
+		.map((func: FunctionDeclaration) => checkFunc(func));
 }
 
-function filterTree(statements, check) {
-	let nodes: FunctionDeclaration[] = [];
-	statements.forEach(statement => {
-		//TODO: scan recursively
-		if (check(statement)) nodes.push(statement);
-	});
-	return nodes;
-}
-
-function checkFunc(fdec: FunctionDeclaration) {
+function checkFunc(fdec: FunctionDeclaration): FunctionReport {
 	let locals = getLocalVars(fdec.body.body);
 	return {
 		loc: fdec.loc,
@@ -39,17 +47,17 @@ function checkFunc(fdec: FunctionDeclaration) {
 	};
 }
 
-function getLocalVars(statements) {
+function getLocalVars(statements: Statement[]): NameMap {
 	let decs = statements.filter(stmt => stmt.type == 'VariableDeclaration');
 	let locals = {};
-	decs.forEach(dec =>
+	decs.forEach((dec: VariableDeclaration) =>
 		dec.declarations.filter(d => d.type == 'VariableDeclarator')
-			.forEach(vd => locals[vd.id.name] = true)
+			.forEach((vd: any) => locals[vd.id.name] = true)
 	);
 	return locals;
 }
 
-function checkSideCauses(statements, locals) {
+function checkSideCauses(statements: Statement[], locals: NameMap) {
 	let result = [];
 	statements.forEach(stmt => {
 		//TODO recursively scan all expressions (phew!)
@@ -59,11 +67,11 @@ function checkSideCauses(statements, locals) {
 	return result;
 }
 
-function checkSideEffects(statements, locals) {
+function checkSideEffects(statements: Statement[], locals: NameMap) {
 	let result: FPError[] = [];
 	statements.forEach(stmt => {
 		if (isAssignment(stmt)) {
-			let ident = getAssignmentTarget(stmt);
+			let ident = getAssignmentTarget(stmt as ExpressionStatement);
 			if (ident && !locals[ident]) {
 				result.push({
 					type: 'WriteNonLocal',
@@ -78,22 +86,22 @@ function checkSideEffects(statements, locals) {
 	return result;
 }
 
-function isAssignment(stmt) {
+function isAssignment(stmt: Statement) {
 	return stmt.type == 'ExpressionStatement' &&
 		stmt.expression.type == 'AssignmentExpression';
 }
 
-function getAssignmentTarget(stmt): string | null {
-	let ident: string | null = null;
-	if (stmt.expression.left.type == 'Identifier')
-		ident = stmt.expression.left.name;
-	else if (stmt.expression.left.type == 'MemberExpression') {
-		if (stmt.expression.left.object.type == 'Identifier')
-			ident = stmt.expression.left.object.name;
-		else if (stmt.expression.left.object.type == 'ThisExpression')
-			ident = 'this';
+function getAssignmentTarget(stmt: ExpressionStatement): string | null {
+	let expr = stmt.expression as AssignmentExpression;
+	if (expr.left.type == 'Identifier')
+		return expr.left.name;
+	else if (expr.left.type == 'MemberExpression') {
+		if (expr.left.object.type == 'Identifier')
+			return expr.left.object.name;
+		else if (expr.left.object.type == 'ThisExpression')
+			return 'this';
 	}
-	return ident;
+	return null;
 }
 
 /*
