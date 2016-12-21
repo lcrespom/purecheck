@@ -1,8 +1,13 @@
 import { parse } from 'esprima';
-import { Statement } from 'estree';
+import { Statement, FunctionDeclaration, SourceLocation } from 'estree';
 
 export default purecheck;
 
+interface FPError {
+	type: string;
+	ident: string;
+	loc: SourceLocation;
+}
 
 function purecheck(code) {
 	let tree = parse(code, {
@@ -15,7 +20,7 @@ function purecheck(code) {
 }
 
 function filterTree(statements, check) {
-	let nodes: Statement[] = [];
+	let nodes: FunctionDeclaration[] = [];
 	statements.forEach(statement => {
 		//TODO: scan recursively
 		if (check(statement)) nodes.push(statement);
@@ -23,7 +28,7 @@ function filterTree(statements, check) {
 	return nodes;
 }
 
-function checkFunc(fdec) {
+function checkFunc(fdec: FunctionDeclaration) {
 	let locals = getLocalVars(fdec.body.body);
 	return {
 		loc: fdec.loc,
@@ -35,8 +40,8 @@ function checkFunc(fdec) {
 }
 
 function getLocalVars(statements) {
-	var decs = statements.filter(stmt => stmt.type == 'VariableDeclaration');
-	var locals = {};
+	let decs = statements.filter(stmt => stmt.type == 'VariableDeclaration');
+	let locals = {};
 	decs.forEach(dec =>
 		dec.declarations.filter(d => d.type == 'VariableDeclarator')
 			.forEach(vd => locals[vd.id.name] = true)
@@ -45,7 +50,7 @@ function getLocalVars(statements) {
 }
 
 function checkSideCauses(statements, locals) {
-	var result = [];
+	let result = [];
 	statements.forEach(stmt => {
 		//TODO recursively scan all expressions (phew!)
 		//TODO check function calls with side causes
@@ -55,10 +60,10 @@ function checkSideCauses(statements, locals) {
 }
 
 function checkSideEffects(statements, locals) {
-	var result = [];
+	let result: FPError[] = [];
 	statements.forEach(stmt => {
 		if (isAssignment(stmt)) {
-			var ident = getAssignmentTarget(stmt);
+			let ident = getAssignmentTarget(stmt);
 			if (ident && !locals[ident]) {
 				result.push({
 					type: 'WriteNonLocal',
@@ -78,8 +83,8 @@ function isAssignment(stmt) {
 		stmt.expression.type == 'AssignmentExpression';
 }
 
-function getAssignmentTarget(stmt) {
-	var ident = null;
+function getAssignmentTarget(stmt): string | null {
+	let ident: string | null = null;
 	if (stmt.expression.left.type == 'Identifier')
 		ident = stmt.expression.left.name;
 	else if (stmt.expression.left.type == 'MemberExpression') {
