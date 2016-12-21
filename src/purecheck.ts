@@ -1,5 +1,5 @@
-import { parse } from 'esprima';
-import { Statement, FunctionDeclaration, SourceLocation } from 'estree';
+import * as esprima from 'esprima';
+import { FunctionDeclaration, SourceLocation } from 'estree';
 
 export default purecheck;
 
@@ -10,7 +10,7 @@ interface FPError {
 }
 
 function purecheck(code) {
-	let tree = parse(code, {
+	let tree = esprima.parse(code, {
 		loc: true,
 		sourceType: 'module'
 	});
