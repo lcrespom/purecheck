@@ -1,20 +1,21 @@
-import esprima from 'esprima';
+import { parse } from 'esprima';
+import { Statement } from 'estree';
 
 export default purecheck;
 
 
 function purecheck(code) {
-	var tree = esprima.parse(code, {
+	let tree = parse(code, {
 		loc: true,
 		sourceType: 'module'
 	});
-	var funcs = filterTree(tree.body, node => node.type == 'FunctionDeclaration');
-	var checks = funcs.map(func => checkFunc(func));
+	let funcs = filterTree(tree.body, node => node.type == 'FunctionDeclaration');
+	let checks = funcs.map(func => checkFunc(func));
 	return checks;
 }
 
 function filterTree(statements, check) {
-	var nodes = [];
+	let nodes: Statement[] = [];
 	statements.forEach(statement => {
 		//TODO: scan recursively
 		if (check(statement)) nodes.push(statement);
@@ -23,7 +24,7 @@ function filterTree(statements, check) {
 }
 
 function checkFunc(fdec) {
-	var locals = getLocalVars(fdec.body.body);
+	let locals = getLocalVars(fdec.body.body);
 	return {
 		loc: fdec.loc,
 		id: fdec.id ? fdec.id.name : null,

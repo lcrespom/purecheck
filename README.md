@@ -28,3 +28,13 @@ All these tasks are pending:
 - Check for side causes from accessing non-local variables.
 - Check for function calls to functions with side causes (multiple passes required).
 - Check for function cals to functions known to have side causes, from a user-provided black list.
+
+
+## Environment
+- TypeScript
+- Functional style, consider Ramda
+- Automated testing based on set of testing files + test specs (maybe test itself)
+
+## ToDo
+- Setup environment according to previous description
+  - Install typescript, get rid of Babel
