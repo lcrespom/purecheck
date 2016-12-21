@@ -11,8 +11,22 @@ export type NameMap = {
 	[name: string]: boolean;
 };
 
+export enum ErrorType {
+	// Side causes
+	ReadNonLocal,
+	ReadThis,
+	// Invoking a function with side causes (according to previous scan)
+	// Invoking a function from a blacklist / not in whitelist
+	// Side effects:
+	WriteNonLocal,
+	WriteThis,
+	WriteParam
+	// Invoking a function with side effects (according to previous scan)
+	// Invoking a function from a blacklist / not in whitelist
+}
+
 export interface FPError {
-	type: string;
+	type: ErrorType;
 	ident: string;
 	loc: SourceLocation | undefined;
 }
@@ -74,7 +88,7 @@ function checkSideEffects(statements: Statement[], locals: NameMap) {
 			let ident = getAssignmentTarget(stmt as ExpressionStatement);
 			if (ident && !locals[ident]) {
 				result.push({
-					type: 'WriteNonLocal',
+					type: ErrorType.WriteNonLocal,
 					ident,
 					loc: stmt.loc
 				});
