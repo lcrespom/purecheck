@@ -11,7 +11,7 @@ export type NameMap = {
 	[name: string]: boolean;
 };
 
-export enum ErrorType {
+export const enum ErrorType {
 	// Side causes
 	ReadNonLocal,
 	ReadThis,
