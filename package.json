@@ -16,6 +16,7 @@
     "typescript": "^2.1.4"
   },
   "dependencies": {
-    "esprima": "^2.7.2"
+    "esprima": "^2.7.2",
+    "json-query": "^2.2.0"
   }
 }
