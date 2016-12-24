@@ -1,11 +1,11 @@
 import * as esprima from 'esprima';
 import { SourceLocation,
-	Statement,
-	ExpressionStatement, AssignmentExpression,
+	Expression, Statement,
 	FunctionDeclaration } from 'estree';
-
 import * as jsonQuery from 'json-query';
 let JQ = (q, data) => jsonQuery(q, { data }).value;
+
+import { checkSideEffect } from './side-effects';
 
 
 export default purecheck;
@@ -67,57 +67,28 @@ function getLocalVars(statements: Statement[]): Set<string> {
 function validateBody(statements: Statement[], locals: Set<string>): FPError[] {
 	let errors: FPError[] = [];
 	statements.forEach(stmt => {
-		if (!recursiveDive(stmt, locals)) {
-			let error = validateStatement(stmt, locals);
-			if (error) errors.push(error);
+		if (!recurStatements(stmt, locals)) {
+			if (stmt.type == 'ExpressionStatement') {
+				let error = validateExpression(stmt.expression, locals);
+				if (error) errors.push(error);
+			}
 		}
 	});
 	return errors;
 }
 
-function recursiveDive(stmt: Statement, locals: Set<string>): boolean {
-	//TODO recursive dive
+function recurStatements(stmt: Statement, locals: Set<string>): boolean {
+	//TODO recursive dive on statements with blocks
 	return false;
 }
 
-function validateStatement(stmt: Statement, locals: Set<string>): FPError | null {
-	return checkSideCause(stmt, locals)
-		|| checkSideEffect(stmt, locals);
+function validateExpression(expr: Expression, locals: Set<string>): FPError | null {
+	//TODO recursive dive on expression tree
+	return checkSideCause(expr, locals)
+		|| checkSideEffect(expr, locals);
 }
 
-function checkSideCause(stmt, locals: Set<string>): FPError | null {
-	return null;
-}
-
-function checkSideEffect(stmt, locals: Set<string>): FPError | null {
-	if (isAssignment(stmt)) {
-		let ident = getAssignmentTarget(stmt as ExpressionStatement);
-		if (ident && !locals.has(ident)) {
-			return {
-				type: ErrorType.WriteNonLocal,
-				ident,
-				loc: stmt.loc
-			};
-		}
-	}
-	return null;
-}
-
-function isAssignment(stmt: Statement) {
-	return stmt.type == 'ExpressionStatement' &&
-		stmt.expression.type == 'AssignmentExpression';
-}
-
-function getAssignmentTarget(stmt: ExpressionStatement): string | null {
-	let expr = stmt.expression as AssignmentExpression;
-	if (expr.left.type == 'Identifier')
-		return expr.left.name;
-	else if (expr.left.type == 'MemberExpression') {
-		if (expr.left.object.type == 'Identifier')
-			return expr.left.object.name;
-		else if (expr.left.object.type == 'ThisExpression')
-			return 'this';
-	}
+function checkSideCause(expr: Expression, locals: Set<string>): FPError | null {
 	return null;
 }
 
