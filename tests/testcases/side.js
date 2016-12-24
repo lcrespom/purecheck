@@ -24,13 +24,12 @@ function doReport(fname) {
 
 
 function noErrors(t, func) {
-	t.equal(func.sideCauses.length, 0, `Function "${func.name}" has no side causes`);
-	t.equal(func.sideEffects.length, 0, `Function "${func.name}" has no side effects`);
+	t.equal(func.errors.length, 0, `Function "${func.name}" has no errors`);
 }
 
 function hasSideEffects(t, func, expected) {
-	t.equal(func.sideEffects.length, expected,
-		`Function "${func.name}" has ${expected} side effect(s)`);
+	t.equal(func.errors.length, expected,
+		`Function "${func.name}" has ${expected} errors(s)`);
 }
 
 

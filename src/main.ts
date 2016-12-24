@@ -21,12 +21,9 @@ function report(checkData: FunctionReport[]) {
 	return {
 		funcs: checkData,
 		numFuncs: checkData.length,
-		numSC: checkData
-			.map(fr => fr.sideCauses.length)
+		numErrors: checkData
+			.map(fr => fr.errors.length)
 			.reduce(addNums, 0),
-		numSE: checkData
-			.map(fr => fr.sideEffects.length)
-			.reduce(addNums, 0)
 	};
 }
 
@@ -35,8 +32,7 @@ function printReport(report) {
 	console.log(JSON.stringify(report.funcs, customStringify, 4));
 	console.log('--------------------\n');
 	console.log(`${report.numFuncs} function${checkPlural(report.numFuncs)}`);
-	console.log(`${report.numSC} side cause${checkPlural(report.numSC)}`);
-	console.log(`${report.numSE} side effect${checkPlural(report.numSE)}`);
+	console.log(`${report.numErrors} error${checkPlural(report.numSC)}`);
 }
 
 readFromStdIn(buf => printReport(processJS(buf)));

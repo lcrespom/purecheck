@@ -19,7 +19,6 @@ export const enum ErrorType {
 	// Side effects:
 	WriteNonLocal,
 	WriteThis,
-	WriteParam
 	// Invoking a function with side effects (according to previous scan)
 	// Invoking a function from a blacklist / not in whitelist
 }
@@ -34,8 +33,7 @@ export interface FunctionReport {
 	loc: SourceLocation | undefined;
 	name: string | null;
 	locals: Set<string>;
-	sideCauses: FPError[];
-	sideEffects: FPError[];
+	errors: FPError[];
 }
 
 
@@ -56,8 +54,7 @@ function checkFunc(fdec: FunctionDeclaration): FunctionReport {
 		loc: fdec.loc,
 		name: fdec.id ? fdec.id.name : null,
 		locals,
-		sideCauses: checkSideCauses(fdec.body.body, locals),
-		sideEffects: checkSideEffects(fdec.body.body, locals)
+		errors: validateBody(fdec.body.body, locals)
 	};
 }
 
@@ -67,33 +64,43 @@ function getLocalVars(statements: Statement[]): Set<string> {
 	return new Set(locals);
 }
 
-function checkSideCauses(statements: Statement[], locals: Set<string>) {
-	let result = [];
+function validateBody(statements: Statement[], locals: Set<string>): FPError[] {
+	let errors: FPError[] = [];
 	statements.forEach(stmt => {
-		//TODO recursively scan all expressions (phew!)
-		//TODO check function calls with side causes
-		//TODO check function calls from blacklist
+		if (!recursiveDive(stmt, locals)) {
+			let error = validateStatement(stmt, locals);
+			if (error) errors.push(error);
+		}
 	});
-	return result;
+	return errors;
 }
 
-function checkSideEffects(statements: Statement[], locals: Set<string>) {
-	let result: FPError[] = [];
-	statements.forEach(stmt => {
-		if (isAssignment(stmt)) {
-			let ident = getAssignmentTarget(stmt as ExpressionStatement);
-			if (ident && !locals.has(ident)) {
-				result.push({
-					type: ErrorType.WriteNonLocal,
-					ident,
-					loc: stmt.loc
-				});
-			}
+function recursiveDive(stmt: Statement, locals: Set<string>): boolean {
+	//TODO recursive dive
+	return false;
+}
+
+function validateStatement(stmt: Statement, locals: Set<string>): FPError | null {
+	return checkSideCause(stmt, locals)
+		|| checkSideEffect(stmt, locals);
+}
+
+function checkSideCause(stmt, locals: Set<string>): FPError | null {
+	return null;
+}
+
+function checkSideEffect(stmt, locals: Set<string>): FPError | null {
+	if (isAssignment(stmt)) {
+		let ident = getAssignmentTarget(stmt as ExpressionStatement);
+		if (ident && !locals.has(ident)) {
+			return {
+				type: ErrorType.WriteNonLocal,
+				ident,
+				loc: stmt.loc
+			};
 		}
-		//TODO check function calls with side effects
-		//TODO check function calls from blacklist
-	});
-	return result;
+	}
+	return null;
 }
 
 function isAssignment(stmt: Statement) {
