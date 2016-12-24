@@ -1,7 +1,5 @@
+import { argv } from 'yargs';
 import purecheck, { FunctionReport } from './purecheck';
-
-
-let showLoc = false;
 
 
 function readFromStdIn(cb) {
@@ -12,33 +10,13 @@ function readFromStdIn(cb) {
 	process.stdin.resume();
 }
 
-function stringifySet(key, value) {
-	if (value instanceof Set)
-		return `Set{ ${Array.from(value.values()).join(', ')} }`;
-	else
-		return value;
-}
-
-function printReport(report) {
-	let checkPlural = num => num == 1 ? '' : 's';
-	console.log(JSON.stringify(report.funcs, stringifySet, 4));
-	console.log('--------------------\n');
-	console.log(`${report.numFuncs} function${checkPlural(report.numFuncs)}`);
-	console.log(`${report.numSC} side cause${checkPlural(report.numSC)}`);
-	console.log(`${report.numSE} side effect${checkPlural(report.numSE)}`);
-}
-
 function processJS(buf) {
+	let tabSize = argv.tabsize || argv.t || '4';
+	buf = replaceTabs(parseInt(tabSize, 10), buf);
 	return report(purecheck(buf));
 }
 
 function report(checkData: FunctionReport[]) {
-	if (!showLoc) {
-		checkData = checkData.map(item => {
-			item.loc = undefined;
-			return item;
-		});
-	}
 	let addNums = (n1: number, n2: number) => n1 + n2;
 	return {
 		funcs: checkData,
@@ -52,4 +30,34 @@ function report(checkData: FunctionReport[]) {
 	};
 }
 
+function printReport(report) {
+	let checkPlural = num => num == 1 ? '' : 's';
+	console.log(JSON.stringify(report.funcs, customStringify, 4));
+	console.log('--------------------\n');
+	console.log(`${report.numFuncs} function${checkPlural(report.numFuncs)}`);
+	console.log(`${report.numSC} side cause${checkPlural(report.numSC)}`);
+	console.log(`${report.numSE} side effect${checkPlural(report.numSE)}`);
+}
+
 readFromStdIn(buf => printReport(processJS(buf)));
+
+
+// --------------- Misc formatting utils ---------------
+
+function location(loc): string {
+	return `(line ${loc.line}, col ${loc.column})`;
+}
+
+function customStringify(key, value) {
+	if (value instanceof Set)
+		return `Set{ ${Array.from(value.values()).join(', ')} }`;
+	else if (key == 'loc' && value)
+		return location(value.start) + ' - ' + location(value.end);
+	else
+		return value;
+}
+
+function replaceTabs(tabs: number, buf: string): string {
+	let spaces = new Array(tabs + 1).join(' ');
+	return buf.replace(/\t/g, spaces);
+}

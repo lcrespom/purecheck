@@ -1,0 +1,38 @@
+//--------------- No side effects nor side causes ---------------
+
+function empty() {}
+
+function withParams(x, y) {}
+
+function withLocals(x, y) { let z, t; }
+
+function withLocalAssignment() {
+	let x;
+	x = {};
+	x.a = 3;
+	let y = x.b;
+}
+
+
+//--------------- Side effects ---------------
+
+function assignmentSideEffects() {
+	// Should issue 5 side effects
+	x = 1;
+	y.u = 2;
+	z[5] = 3;
+	t++;
+	u += 4;
+}
+
+function invokeSideEffects(x) {
+	// Should issue 1 side effect
+	assignmentSideEffects();
+}
+
+function paramAssignments(x, y, z) {
+	// Should issue 3 side effects
+	x = 4;
+	y++;
+	z += 2;
+}
