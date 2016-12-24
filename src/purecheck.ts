@@ -42,7 +42,8 @@ export interface FunctionReport {
 function purecheck(code: string): FunctionReport[] {
 	let tree = esprima.parse(code, {
 		loc: true,
-		sourceType: 'module'
+		comment: true,
+		sourceType: 'module',
 	});
 	return tree.body
 		.filter(node => node.type == 'FunctionDeclaration')

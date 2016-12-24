@@ -5,13 +5,16 @@
   "main": "bin/purecheck.js",
   "scripts": {
     "build": "tsc",
-    "start": "node bin/main"
+    "start": "node bin/main",
+    "test": "node tests/testcases/side | faucet"
   },
   "author": "Luis Crespo",
   "license": "ISC",
   "devDependencies": {
     "@types/esprima": "^2.1.33",
     "@types/node": "^6.0.52",
+    "faucet": "0.0.1",
+    "tape": "^4.6.3",
     "tslint": "^4.1.1",
     "typescript": "^2.1.4"
   },
