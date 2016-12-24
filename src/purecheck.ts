@@ -2,14 +2,13 @@ import * as esprima from 'esprima';
 import { SourceLocation,
 	Statement,
 	ExpressionStatement, AssignmentExpression,
-	FunctionDeclaration, VariableDeclaration } from 'estree';
+	FunctionDeclaration } from 'estree';
+
+import * as jsonQuery from 'json-query';
+let JQ = (q, data) => jsonQuery(q, { data }).value;
 
 
 export default purecheck;
-
-export type NameMap = {
-	[name: string]: boolean;
-};
 
 export const enum ErrorType {
 	// Side causes
@@ -33,8 +32,8 @@ export interface FPError {
 
 export interface FunctionReport {
 	loc: SourceLocation | undefined;
-	id: string | null;
-	locals: NameMap;
+	name: string | null;
+	locals: Set<string>;
 	sideCauses: FPError[];
 	sideEffects: FPError[];
 }
@@ -54,24 +53,20 @@ function checkFunc(fdec: FunctionDeclaration): FunctionReport {
 	let locals = getLocalVars(fdec.body.body);
 	return {
 		loc: fdec.loc,
-		id: fdec.id ? fdec.id.name : null,
+		name: fdec.id ? fdec.id.name : null,
 		locals,
 		sideCauses: checkSideCauses(fdec.body.body, locals),
 		sideEffects: checkSideEffects(fdec.body.body, locals)
 	};
 }
 
-function getLocalVars(statements: Statement[]): NameMap {
-	let decs = statements.filter(stmt => stmt.type == 'VariableDeclaration');
-	let locals = {};
-	decs.forEach((dec: VariableDeclaration) =>
-		dec.declarations.filter(d => d.type == 'VariableDeclarator')
-			.forEach((vd: any) => locals[vd.id.name] = true)
-	);
-	return locals;
+function getLocalVars(statements: Statement[]): Set<string> {
+	let query = '[*type=VariableDeclaration].declarations[*type=VariableDeclarator].id.name';
+	let locals: string[] = JQ(query, statements);
+	return new Set(locals);
 }
 
-function checkSideCauses(statements: Statement[], locals: NameMap) {
+function checkSideCauses(statements: Statement[], locals: Set<string>) {
 	let result = [];
 	statements.forEach(stmt => {
 		//TODO recursively scan all expressions (phew!)
@@ -81,12 +76,12 @@ function checkSideCauses(statements: Statement[], locals: NameMap) {
 	return result;
 }
 
-function checkSideEffects(statements: Statement[], locals: NameMap) {
+function checkSideEffects(statements: Statement[], locals: Set<string>) {
 	let result: FPError[] = [];
 	statements.forEach(stmt => {
 		if (isAssignment(stmt)) {
 			let ident = getAssignmentTarget(stmt as ExpressionStatement);
-			if (ident && !locals[ident]) {
+			if (ident && !locals.has(ident)) {
 				result.push({
 					type: ErrorType.WriteNonLocal,
 					ident,

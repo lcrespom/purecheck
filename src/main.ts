@@ -1,24 +1,27 @@
 import purecheck, { FunctionReport } from './purecheck';
 
 
-process.stdin.setEncoding('utf8');
-let buf = '';
 let showLoc = false;
 
-process.stdin.on('data', function(chunk) {
-	buf += chunk;
-});
 
-process.stdin.on('end', function() {
-	printReport(processJS(buf));
-});
+function readFromStdIn(cb) {
+	let buf = '';
+	process.stdin.setEncoding('utf8');
+	process.stdin.on('data', chunk => buf += chunk);
+	process.stdin.on('end', _ => cb(buf));
+	process.stdin.resume();
+}
 
-process.stdin.resume();
-
+function stringifySet(key, value) {
+	if (value instanceof Set)
+		return `Set{ ${Array.from(value.values()).join(', ')} }`;
+	else
+		return value;
+}
 
 function printReport(report) {
 	let checkPlural = num => num == 1 ? '' : 's';
-	console.log(JSON.stringify(report.funcs, null, 4));
+	console.log(JSON.stringify(report.funcs, stringifySet, 4));
 	console.log('--------------------\n');
 	console.log(`${report.numFuncs} function${checkPlural(report.numFuncs)}`);
 	console.log(`${report.numSC} side cause${checkPlural(report.numSC)}`);
@@ -48,3 +51,5 @@ function report(checkData: FunctionReport[]) {
 			.reduce(addNums, 0)
 	};
 }
+
+readFromStdIn(buf => printReport(processJS(buf)));
