@@ -1,4 +1,4 @@
-import { Expression, AssignmentExpression } from 'estree';
+import { Expression, Pattern } from 'estree';
 
 import { ErrorType, FPError } from './purecheck';
 
@@ -6,22 +6,24 @@ import { ErrorType, FPError } from './purecheck';
 export function checkSideEffect(expr: Expression, locals: Set<string>): FPError | null {
 	let ident: string | null = null;
 	if (expr.type == 'AssignmentExpression')
-		ident = getAssignmentTarget(expr);
+		ident = getTarget(expr.left);
 	else if (expr.type == 'UpdateExpression')
-		ident = expr.argument['name'];
+		ident = getTarget(expr.argument);
 	if (ident && !locals.has(ident))
-		return fpError(ErrorType.WriteNonLocal, ident, expr.loc);
+		return fpError(
+			ident == 'this' ? ErrorType.WriteThis : ErrorType.WriteNonLocal,
+			ident, expr.loc);
 	else
 		return null;
 }
 
-function getAssignmentTarget(expr: AssignmentExpression): string | null {
-	if (expr.left.type == 'Identifier')
-		return expr.left.name;
-	else if (expr.left.type == 'MemberExpression') {
-		if (expr.left.object.type == 'Identifier')
-			return expr.left.object.name;
-		else if (expr.left.object.type == 'ThisExpression')
+function getTarget(patt: Expression | Pattern): string | null {
+	if (patt.type == 'Identifier')
+		return patt.name;
+	else if (patt.type == 'MemberExpression') {
+		if (patt.object.type == 'Identifier')
+			return patt.object.name;
+		else if (patt.object.type == 'ThisExpression')
 			return 'this';
 	}
 	return null;

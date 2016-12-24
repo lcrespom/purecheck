@@ -1,8 +1,10 @@
-let fs = require('fs');
-let path = require('path');
-let test = require('tape');
+const fs = require('fs');
+const path = require('path');
+const test = require('tape');
 
-let purecheck = require('../../lib/purecheck').default;
+const purecheck = require('../../lib/purecheck').default;
+const ERR_WriteNonLocal = 4;
+const ERR_WriteThis = 5;
 
 
 function readTestFile(name) {
@@ -27,14 +29,18 @@ function noErrors(t, func) {
 	t.equal(func.errors.length, 0, `Function "${func.name}" has no errors`);
 }
 
-function hasSideEffects(t, func, expected) {
+function hasSideEffects(t, func, expected, ofType) {
 	t.equal(func.errors.length, expected,
-		`Function "${func.name}" has ${expected} errors(s)`);
+		`Function "${func.name}" has ${expected} error(s)`);
+	if (ofType === undefined) return;
+	for (let i = 0; i < func.errors.length; i++)
+		t.equal(func.errors[i].type, ofType,
+			`Error ${i} in function "${func.name}" is of type ${ofType}`)
 }
 
 
 test('Simple pure functions', t => {
-	let report = doReport('test1');
+	let report = doReport('simple-pure');
 	t.ok(report, 'Report provided');
 	noErrors(t, report.empty);
 	noErrors(t, report.withParams);
@@ -44,9 +50,10 @@ test('Simple pure functions', t => {
 });
 
 test('Side effects', t => {
-	let report = doReport('test1');
-	hasSideEffects(t, report.assignmentSideEffects, 5);
+	let report = doReport('side-effects');
+	hasSideEffects(t, report.assignmentSideEffects, 5, ERR_WriteNonLocal);
 	hasSideEffects(t, report.invokeSideEffects, 1);
-	hasSideEffects(t, report.paramAssignments, 3);
+	hasSideEffects(t, report.paramAssignments, 3, ERR_WriteNonLocal);
+	hasSideEffects(t, report.assignToThis, 2, ERR_WriteThis);
 	t.end();
 });

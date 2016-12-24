@@ -12,11 +12,13 @@ export default purecheck;
 
 export const enum ErrorType {
 	// Side causes
+	SIDE_CAUSE_BEGIN,
 	ReadNonLocal,
 	ReadThis,
 	// Invoking a function with side causes (according to previous scan)
 	// Invoking a function from a blacklist / not in whitelist
 	// Side effects:
+	SIDE_EFFECT_BEGIN,
 	WriteNonLocal,
 	WriteThis,
 	// Invoking a function with side effects (according to previous scan)
