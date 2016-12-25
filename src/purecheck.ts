@@ -10,17 +10,17 @@ import { checkSideEffect } from './side-effects';
 
 export default purecheck;
 
-export const enum ErrorType {
+export enum ErrorType {
 	// Side causes
-	SIDE_CAUSE_BEGIN,
 	ReadNonLocal,
 	ReadThis,
+	InvokeSideCauses,
 	// Invoking a function with side causes (according to previous scan)
 	// Invoking a function from a blacklist / not in whitelist
 	// Side effects:
-	SIDE_EFFECT_BEGIN,
 	WriteNonLocal,
 	WriteThis,
+	InvokeSideEffects
 	// Invoking a function with side effects (according to previous scan)
 	// Invoking a function from a blacklist / not in whitelist
 }
@@ -97,7 +97,7 @@ function checkSideCause(expr: Expression, locals: Set<string>): FPError | null {
 /*
 	Side causes:
 		- Reading a non-local variable
-		- Reading from this (optional, default to false)
+		- Reading from this (configurable)
 		- Invoking a function with side causes (according to previous scan)
 		- Invoking a function from a blacklist
 	Side effects:
