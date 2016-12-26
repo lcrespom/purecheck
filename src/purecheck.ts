@@ -40,56 +40,11 @@ function purecheck(code: string): FunctionReport[] {
 		comment: true,
 		sourceType: 'module',
 	});
-	walkTree(tree);
-	return [];
-	// return tree.body
-	// 	.filter(node => node.type == 'FunctionDeclaration')
-	// 	.map((func: FunctionDeclaration) => checkFunc(func));
-}
-
-/*
-function checkFunc(fdec: FunctionDeclaration): FunctionReport {
-	let locals = getLocalVars(fdec.body.body);
-	return {
-		loc: fdec.loc,
-		name: fdec.id ? fdec.id.name : null,
-		locals,
-		errors: validateBody(fdec.body.body, locals)
-	};
-}
-
-function getLocalVars(statements: Statement[]): Set<string> {
-	let query = '[*type=VariableDeclaration].declarations[*type=VariableDeclarator].id.name';
-	let locals: string[] = JQ(query, statements);
-	return new Set(locals);
-}
-
-function validateBody(statements: Statement[], locals: Set<string>): FPError[] {
-	let errors: FPError[] = [];
-	statements.forEach(stmt => {
-		if (!recurStatements(stmt, locals)) {
-			if (stmt.type == 'ExpressionStatement') {
-				let error = validateExpression(stmt.expression, locals);
-				if (error) errors.push(error);
-			}
-		}
-	});
-	return errors;
-}
-
-function recurStatements(stmt: Statement, locals: Set<string>): boolean {
-	//TODO recursive dive on statements with blocks
-	return false;
-}
-
-function validateExpression(expr: Expression, locals: Set<string>): FPError | null {
-	//TODO recursive dive on expression tree
-	return checkSideCause(expr, locals)
-		|| checkSideEffect(expr, locals);
-}
-
-function checkSideCause(expr: Expression, locals: Set<string>): FPError | null {
-	return null;
+	let errors = [];
+	walkTree(tree, errors);
+	for (let e of errors)
+		console.log('Error:', e);
+	return [];	// TODO: sort, etc.
 }
 
 /*
@@ -133,7 +88,7 @@ function walkAddParent(ast, fn) {
 	}
 }
 
-function walkTree(tree: Program) {
+function walkTree(tree: Program, errors: FPError[]) {
 	walkAddParent(tree, node => {
 		switch (node.type) {
 			case 'BlockStatement':
@@ -144,7 +99,7 @@ function walkTree(tree: Program) {
 			case 'VariableDeclarator':
 				return addLocalVar(node);
 			case 'AssignmentExpression':
-				return checkAssignment(node);
+				return checkAssignment(node, errors);
 		}
 	});
 }
@@ -170,9 +125,10 @@ function addLocalVar(node) {
 	block.fp_locals.add(node.id.name);
 }
 
-function checkAssignment(node) {
+function checkAssignment(node, errors: FPError[]) {
 	let error = checkSideEffect(node, mergeLocals(node));
-	if (error) console.log('Error:', error);
+	if (error)
+		errors.push(error);
 }
 
 // --------------- Walk tree helpers ---------------
