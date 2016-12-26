@@ -20,7 +20,6 @@
   },
   "dependencies": {
     "esprima": "^2.7.2",
-    "json-query": "^2.2.0",
     "yargs": "^6.5.0"
   }
 }

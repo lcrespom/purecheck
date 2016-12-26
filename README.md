@@ -36,6 +36,6 @@ All these tasks are pending:
 - Automated testing based on set of testing files + test specs (maybe test itself)
 
 ## ToDo
-- Setup environment according to previous description
-- Try esprima-walk
-  - Refactor when npm registry gets available
+- Improve report structure
+- Detect side causes
+- Make a second pass to detect invocation of functions with side effects
