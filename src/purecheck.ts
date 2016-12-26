@@ -88,7 +88,8 @@ function walkTree(tree: Program, errors: FPError[]) {
 			case 'VariableDeclarator':
 				return addLocalVar(node);
 			case 'AssignmentExpression':
-				return checkAssignment(node, errors);
+			case 'UpdateExpression':
+				return checkAssignOrUpdate(node, errors);
 		}
 	});
 }
@@ -105,7 +106,7 @@ function addLocalVar(node) {
 	block.fp_locals.add(node.id.name);
 }
 
-function checkAssignment(node, errors: FPError[]) {
+function checkAssignOrUpdate(node, errors: FPError[]) {
 	let error = checkSideEffect(node, mergeLocals(node));
 	if (error)
 		errors.push(error);

@@ -34,19 +34,20 @@ function doReport(fname) {
 
 //--------------- Test helpers ---------------
 
-function hasErrors(t, func, expected, ofType) {
-	if (!func && expected > 0) {
+function hasErrors(t, report, fname, expected, ofType) {
+	let func = report[fname];
+	if (!func) {
 		t.equal(0, expected,
-			`Function has ${expected} error(s)`);
+			`Function ${fname} has ${expected} error(s)`);
 		return;
 	}
 	t.equal(func.errors.length, expected,
-		`Function "${func.name}" has ${expected} error(s)`);
+		`Function "${fname}" has ${expected} error(s)`);
 	if (ofType === undefined) return;
 	let tname = ErrorType[ofType];
 	for (let i = 0; i < func.errors.length; i++)
 		t.equal(func.errors[i].type, ofType,
-			`Error ${i} in function "${func.name}" is of type ${tname}`);
+			`Error ${i} in function "${fname}" is of type ${tname}`);
 }
 
 
@@ -62,17 +63,17 @@ test('Simple pure functions', t => {
 
 test('Side effects', t => {
 	let report = doReport('side-effects');
-	hasErrors(t, report.assignmentSideEffects, 5, ErrorType.WriteNonLocal);
-	hasErrors(t, report.paramAssignments, 3, ErrorType.WriteNonLocal);
-	hasErrors(t, report.assignToThis, 2, ErrorType.WriteThis);
-	hasErrors(t, report.invokeSideEffects, 1, ErrorType.InvokeSideEffects);
+	hasErrors(t, report, 'assignmentSideEffects', 5, ErrorType.WriteNonLocal);
+	hasErrors(t, report, 'paramAssignments', 3, ErrorType.WriteNonLocal);
+	hasErrors(t, report, 'assignToThis', 2, ErrorType.WriteThis);
+	hasErrors(t, report, 'invokeSideEffects', 1, ErrorType.InvokeSideEffects);
 	t.end();
 });
 
 test('Side causes', t => {
 	let report = doReport('side-causes');
-	hasErrors(t, report.sideCause, 2, ErrorType.ReadNonLocal);
-	hasErrors(t, report.sideCauseThis, 2, ErrorType.ReadThis);
-	hasErrors(t, report.callsSideCause, 2, ErrorType.InvokeSideCauses);
+	hasErrors(t, report, 'sideCause', 2, ErrorType.ReadNonLocal);
+	hasErrors(t, report, 'sideCauseThis', 2, ErrorType.ReadThis);
+	hasErrors(t, report, 'callsSideCause', 2, ErrorType.InvokeSideCauses);
 	t.end();
 });
