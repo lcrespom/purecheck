@@ -30,5 +30,6 @@ function assignToThis() {
 let global = 1;
 
 function changeGlobal() {
+	// Should issue 1 side effect
 	global = 2;
 }

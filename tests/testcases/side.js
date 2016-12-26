@@ -4,6 +4,7 @@ const test = require('tape');
 const pcheck = require('../../lib/purecheck');
 const purecheck = pcheck.default;
 const ErrorType = pcheck.ErrorType;
+const findParentFunction = pcheck.findParentFunction;
 
 
 //--------------- File checking for purity ---------------
@@ -13,26 +14,32 @@ function readTestFile(name) {
 	return fs.readFileSync(fullName, 'utf8');
 }
 
-function a2o(a, prop) {
-	let o = {};
-	for (let e of a)
-		o[e[prop]] = e;
-	return o;
+function groupByFunction(errors) {
+	let funcs = {};
+	for (let e of errors) {
+		let fnode = findParentFunction(e.node);
+		let name = fnode.id.name;
+		if (!funcs[name])
+			funcs[name] = { name, errors: [] };
+		funcs[name].errors.push(e);
+	}
+	return funcs;
 }
 
 function doReport(fname) {
 	let file = readTestFile(fname);
-	return a2o(purecheck(file), 'name');
+	return groupByFunction(purecheck(file));
 }
 
 
 //--------------- Test helpers ---------------
 
-function noErrors(t, func) {
-	t.equal(func.errors.length, 0, `Function "${func.name}" has no errors`);
-}
-
 function hasErrors(t, func, expected, ofType) {
+	if (!func && expected > 0) {
+		t.equal(0, expected,
+			`Function has ${expected} error(s)`);
+		return;
+	}
 	t.equal(func.errors.length, expected,
 		`Function "${func.name}" has ${expected} error(s)`);
 	if (ofType === undefined) return;
@@ -48,10 +55,8 @@ function hasErrors(t, func, expected, ofType) {
 test('Simple pure functions', t => {
 	let report = doReport('simple-pure');
 	t.ok(report, 'Report provided');
-	noErrors(t, report.empty);
-	noErrors(t, report.withParams);
-	noErrors(t, report.withLocals);
-	noErrors(t, report.withLocalAssignment);
+	t.equal(Object.keys(report).length, 0,
+		'File "simple-pure" has no errors');
 	t.end();
 });
 

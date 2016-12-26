@@ -1,6 +1,6 @@
 const esprima = require('esprima');
 
-import { Program, SourceLocation } from 'estree';
+import { Node, Program, SourceLocation } from 'estree';
 import { checkSideEffect } from './side-effects';
 
 
@@ -25,6 +25,7 @@ export interface FPError {
 	type: ErrorType;
 	ident: string;
 	loc: SourceLocation | undefined;
+	node: Node;
 }
 
 function purecheck(code: string): FPError[] {
@@ -113,21 +114,21 @@ function checkAssignment(node, errors: FPError[]) {
 // --------------- Walk tree helpers ---------------
 
 // TODO curry this function
-function findParent(predicate, node) {
+export function findParent(predicate, node) {
 	if (!node.parent) return null;
 	if (predicate(node.parent)) return node.parent;
 	return findParent(predicate, node.parent);
 }
 
 // TODO const findParentFunction = findParent(n => n.fp_data)
-function findParentFunction(node) {
+export function findParentFunction(node) {
 	return findParent(
 		n => n.type == 'FunctionDeclaration',
 		node);
 }
 
 // TODO const findParentBlock = findParent(n => n.type == 'BlockStatement')
-function findParentBlock(node) {
+export function findParentBlock(node) {
 	return findParent(n => n.type == 'BlockStatement', node);
 }
 

@@ -1,4 +1,4 @@
-import { Expression, Pattern } from 'estree';
+import { Node, Expression, Pattern } from 'estree';
 
 import { ErrorType, FPError } from './purecheck';
 
@@ -12,7 +12,7 @@ export function checkSideEffect(expr: Expression, locals: Set<string>): FPError 
 	if (ident && !locals.has(ident))
 		return fpError(
 			ident == 'this' ? ErrorType.WriteThis : ErrorType.WriteNonLocal,
-			ident, expr.loc);
+			ident, expr.loc, expr);
 	else
 		return null;
 }
@@ -29,6 +29,6 @@ function getTarget(patt: Expression | Pattern): string | null {
 	return null;
 }
 
-function fpError(type: ErrorType, ident: string, loc: any): FPError {
-	return { type, ident, loc };
+function fpError(type: ErrorType, ident: string, loc: any, node: Node): FPError {
+	return { type, ident, loc, node };
 }
