@@ -36,6 +36,7 @@ function purecheck(code: string): FPError[] {
 	});
 	let errors = [];
 	walkTree(tree, errors);
+	// TODO make a second pass to detect invocation of impure functions
 	return errors;
 }
 
