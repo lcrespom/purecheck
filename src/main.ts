@@ -1,3 +1,4 @@
+const fs = require('fs');
 import { argv } from 'yargs';
 import purecheck, { FunctionReport } from './purecheck';
 
@@ -35,7 +36,16 @@ function printReport(report) {
 	console.log(`${report.numErrors} error${checkPlural(report.numSC)}`);
 }
 
-readFromStdIn(buf => printReport(processJS(buf)));
+function readFile(cb) {
+	if (argv._.length > 0) {
+		cb(fs.readFileSync(argv._[0], 'utf8'));
+	}
+	else {
+		readFromStdIn(cb);
+	}
+}
+
+readFile(buf => printReport(processJS(buf)));
 
 
 // --------------- Misc formatting utils ---------------

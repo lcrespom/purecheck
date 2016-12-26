@@ -37,4 +37,5 @@ All these tasks are pending:
 
 ## ToDo
 - Setup environment according to previous description
-  - Install typescript, get rid of Babel
+- Try esprima-walk
+  - Refactor when npm registry gets available
