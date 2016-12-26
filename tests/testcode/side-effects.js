@@ -26,3 +26,9 @@ function assignToThis() {
 	this.x = 3;
 	this.y--;
 }
+
+let global = 1;
+
+function changeGlobal() {
+	global = 2;
+}

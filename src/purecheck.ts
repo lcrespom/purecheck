@@ -27,14 +27,7 @@ export interface FPError {
 	loc: SourceLocation | undefined;
 }
 
-export interface FunctionReport {
-	loc: SourceLocation | undefined;
-	name: string | null;
-	errors: FPError[];
-}
-
-
-function purecheck(code: string): FunctionReport[] {
+function purecheck(code: string): FPError[] {
 	let tree = esprima.parse(code, {
 		loc: true,
 		comment: true,
@@ -42,9 +35,7 @@ function purecheck(code: string): FunctionReport[] {
 	});
 	let errors = [];
 	walkTree(tree, errors);
-	for (let e of errors)
-		console.log('Error:', e);
-	return [];	// TODO: sort, etc.
+	return errors;
 }
 
 /*
@@ -93,9 +84,6 @@ function walkTree(tree: Program, errors: FPError[]) {
 		switch (node.type) {
 			case 'BlockStatement':
 				return initBlock(node);
-			case 'FunctionDeclaration':
-				return initFuncDec(node);
-			// TODO also function expression
 			case 'VariableDeclarator':
 				return addLocalVar(node);
 			case 'AssignmentExpression':
@@ -107,15 +95,6 @@ function walkTree(tree: Program, errors: FPError[]) {
 function initBlock(node) {
 	node.fp_parent_function = findParentFunction(node);
 	node.fp_locals = new Set<string>();
-}
-
-function initFuncDec(node) {
-	let fr: FunctionReport = {
-		loc: node.loc,
-		name: node.id ? node.id.name : undefined,
-		errors: []
-	};
-	node.fp_data = fr;
 }
 
 function addLocalVar(node) {
@@ -142,7 +121,9 @@ function findParent(predicate, node) {
 
 // TODO const findParentFunction = findParent(n => n.fp_data)
 function findParentFunction(node) {
-	return findParent(n => n.fp_data, node);
+	return findParent(
+		n => n.type == 'FunctionDeclaration',
+		node);
 }
 
 // TODO const findParentBlock = findParent(n => n.type == 'BlockStatement')

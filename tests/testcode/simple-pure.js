@@ -13,3 +13,10 @@ function withLocalAssignment() {
 	let y = x.b;
 	return x;
 }
+
+function closure(pOut) {
+	let l;
+	function inner(pIn) {
+		l = 5;
+	}
+}

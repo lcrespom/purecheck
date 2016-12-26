@@ -1,6 +1,6 @@
 const fs = require('fs');
 import { argv } from 'yargs';
-import purecheck, { FunctionReport } from './purecheck';
+import purecheck, { FPError } from './purecheck';
 
 
 function readFromStdIn(cb) {
@@ -17,23 +17,16 @@ function processJS(buf) {
 	return report(purecheck(buf));
 }
 
-function report(checkData: FunctionReport[]) {
-	let addNums = (n1: number, n2: number) => n1 + n2;
-	return {
-		funcs: checkData,
-		numFuncs: checkData.length,
-		numErrors: checkData
-			.map(fr => fr.errors.length)
-			.reduce(addNums, 0),
-	};
+function report(errors: FPError[]) {
+	// TODO: sort if required, count error types, add descrptive text, etc.
+	return errors;
 }
 
 function printReport(report) {
 	let checkPlural = num => num == 1 ? '' : 's';
-	console.log(JSON.stringify(report.funcs, customStringify, 4));
+	console.log(JSON.stringify(report, customStringify, 4));
 	console.log('--------------------\n');
-	console.log(`${report.numFuncs} function${checkPlural(report.numFuncs)}`);
-	console.log(`${report.numErrors} error${checkPlural(report.numSC)}`);
+	console.log(`${report.length} error${checkPlural(report.length)}`);
 }
 
 function readFile(cb) {
