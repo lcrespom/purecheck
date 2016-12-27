@@ -91,6 +91,8 @@ function walkTree(tree: Program, errors: FPError[]) {
 			case 'AssignmentExpression':
 			case 'UpdateExpression':
 				return checkAssignOrUpdate(node, errors);
+			case 'Identifier':
+				//return checkSideCause(node, errors);
 		}
 	});
 }
@@ -108,12 +110,44 @@ function addLocalVar(node) {
 }
 
 function checkAssignOrUpdate(node, errors: FPError[]) {
-	let error = checkSideEffect(node, mergeLocals(node));
-	if (error)
-		errors.push(error);
+	addError(errors, checkSideEffect(node, mergeLocals(node)));
 }
 
+function checkSideCause(node, errors: FPError[]) {
+	if (skipSideCause(node)) return;
+	let locals = mergeLocals(node);
+	if (!locals.has(node.name))
+		addError(errors, {
+			type: node.name == 'this' ? ErrorType.ReadThis : ErrorType.ReadNonLocal,
+			ident: node.name,
+			loc: node.loc,
+			node
+		});
+}
+
+function skipSideCause(node): boolean {
+	if (!node.parent) return true;
+	// Skip function declaration identifiers
+	if (node.parent.type == 'FunctionDeclaration') return true;
+	// Skip member expressions e.g. "obj.ident" (except leftmost part)
+	if (node.parent.type == 'MemberExpression'
+		&& node.parent.property == node) return true;
+	// Skip if direct assignment
+	if (node.parent.type == 'AssignmentExpression'
+		&& node.parent.left == node) return true;
+	if (!node.parent.parent) return false;
+	// If we are here, only consider skipping composite assignment expressions
+	if (node.parent.parent.type != 'AssignmentExpression') return false;
+	// Skip if left side of assignment expression
+	return node.parent.parent.left == node.parent;
+}
+
+
 // --------------- Walk tree helpers ---------------
+
+function addError(errors, e) {
+	if (e) errors.push(e);
+}
 
 // TODO curry this function
 export function findParent(predicate, node) {
@@ -141,4 +175,3 @@ function mergeLocals(node, locals = new Set<string>()): Set<string> {
 	parent.fp_locals.forEach(l => locals.add(l));
 	return mergeLocals(parent, locals);
 }
-

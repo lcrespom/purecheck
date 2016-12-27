@@ -18,6 +18,7 @@ function groupByFunction(errors) {
 	let funcs = {};
 	for (let e of errors) {
 		let fnode = findParentFunction(e.node);
+		if (!fnode) continue;
 		let name = fnode.id.name;
 		if (!funcs[name])
 			funcs[name] = { name, errors: [] };
