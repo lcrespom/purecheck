@@ -132,13 +132,13 @@ function skipSideCause(node): boolean {
 	// Skip member expressions e.g. "obj.ident" (except leftmost part)
 	if (node.parent.type == 'MemberExpression'
 		&& node.parent.property == node) return true;
-	// Skip if direct assignment
+	// Skip if left side of direct assignment
 	if (node.parent.type == 'AssignmentExpression'
 		&& node.parent.left == node) return true;
 	if (!node.parent.parent) return false;
 	// If we are here, only consider skipping composite assignment expressions
 	if (node.parent.parent.type != 'AssignmentExpression') return false;
-	// Skip if left side of assignment expression
+	// Skip if left side of composite assignment (e.g. x.y = ...)
 	return node.parent.parent.left == node.parent;
 }
 
