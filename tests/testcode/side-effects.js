@@ -7,6 +7,7 @@ function assignmentSideEffects() {
 	z[5] = 3;
 	t++;
 	u += 4;
+	k.x++;
 }
 
 function invokeSideEffects(x) {

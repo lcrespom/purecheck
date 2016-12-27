@@ -93,6 +93,7 @@ function walkTree(tree: Program, errors: FPError[]) {
 			case 'UpdateExpression':
 				return checkAssignOrUpdate(node, errors);
 			case 'Identifier':
+			case 'ThisExpression':
 				return checkIdentifier(node, errors);
 		}
 	});

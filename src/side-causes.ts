@@ -1,4 +1,4 @@
-import { Identifier } from 'estree';
+import { Identifier, ThisExpression } from 'estree';
 import { ErrorType, FPError } from './purecheck';
 
 
@@ -10,9 +10,15 @@ export function checkSideCause(node: Identifier, locals: Set<string>): FPError |
 		return null;
 }
 
-function fpError(node: Identifier): FPError {
-	return {
-		type: node.name == 'this' ? ErrorType.ReadThis : ErrorType.ReadNonLocal,
+function fpError(node: Identifier | ThisExpression): FPError {
+	if (node.type == 'ThisExpression') return {
+		type: ErrorType.ReadThis,
+		ident: 'this',
+		loc: node.loc,
+		node
+	};
+	else return {
+		type: ErrorType.ReadNonLocal,
 		ident: node.name,
 		loc: node.loc,
 		node
@@ -40,7 +46,7 @@ function skipSideCause(node): boolean {
 	if (!node.parent.parent) return false;
 	// TODO should climb tree until type != 'MemberExpression'
 	// If we are here, only consider skipping composite assignment expressions
-	// TODO also consider type == 'UpdateExpression'
+	if (node.parent.parent.type == 'UpdateExpression') return true;
 	if (node.parent.parent.type != 'AssignmentExpression') return false;
 	// Skip if left side of composite assignment (e.g. x.y = ...)
 	return node.parent.parent.left == node.parent;

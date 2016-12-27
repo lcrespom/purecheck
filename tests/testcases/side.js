@@ -64,7 +64,7 @@ test('Simple pure functions', t => {
 
 test('Side effects', t => {
 	let report = doReport('side-effects');
-	hasErrors(t, report, 'assignmentSideEffects', 5, ErrorType.WriteNonLocal);
+	hasErrors(t, report, 'assignmentSideEffects', 6, ErrorType.WriteNonLocal);
 	hasErrors(t, report, 'paramAssignments', 3, ErrorType.WriteNonLocal);
 	hasErrors(t, report, 'assignToThis', 2, ErrorType.WriteThis);
 	hasErrors(t, report, 'invokeSideEffects', 1, ErrorType.InvokeSideEffects);
