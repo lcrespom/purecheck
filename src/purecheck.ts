@@ -1,6 +1,6 @@
 const esprima = require('esprima');
 
-import { Node, Program, SourceLocation } from 'estree';
+import { Node, Program, SourceLocation, FunctionDeclaration } from 'estree';
 import { checkSideEffect } from './side-effects';
 import { checkSideCause } from './side-causes';
 
@@ -115,7 +115,8 @@ function checkAssignOrUpdate(node, errors: FPError[]) {
 }
 
 function checkIdentifier(node, errors: FPError[]) {
-	addError(errors, checkSideCause(node, mergeLocals(node)));
+	let localsAndParams = mergeSets(mergeLocals(node), mergeParams(node));
+	addError(errors, checkSideCause(node, localsAndParams));
 }
 
 
@@ -144,10 +145,25 @@ export function findParentBlock(node) {
 	return findParent(n => n.type == 'BlockStatement', node);
 }
 
-function mergeLocals(node, locals = new Set<string>()): Set<string> {
+function mergeSets<T>(s1: Iterable<T>, s2: Iterable<T>): Set<T> {
+	return new Set([...s1, ...s2]);
+}
+
+function mergeLocals(node: Node, locals = new Set<string>()): Set<string> {
 	let parent = findParent(n => n.fp_locals, node);
 	if (!parent)
 		return locals;
-	parent.fp_locals.forEach(l => locals.add(l));
+	locals = mergeSets(parent.fp_locals, locals);
 	return mergeLocals(parent, locals);
+}
+
+function mergeParams(node: Node, params = new Set<string>()): Set<string> {
+	let parent = findParentFunction(node);
+	if (!parent)
+		return params;
+	// TODO add support for func(param = defaultValue)
+	// TODO add support for func(...rest)
+	// TODO add support for func({ destructuring })
+	parent.params.forEach(p => params.add(p.name));
+	return mergeParams(parent, params);
 }
