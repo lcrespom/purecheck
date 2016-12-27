@@ -10,11 +10,18 @@ export function checkSideEffect(expr: Expression, locals: Set<string>): FPError 
 	else if (expr.type == 'UpdateExpression')
 		ident = getTarget(expr.argument);
 	if (ident && !locals.has(ident))
-		return fpError(
-			ident == 'this' ? ErrorType.WriteThis : ErrorType.WriteNonLocal,
-			ident, expr.loc, expr);
+		return fpError(ident, expr);
 	else
 		return null;
+}
+
+function fpError(ident: string, node: Node): FPError {
+	return {
+		type: ident == 'this' ? ErrorType.WriteThis : ErrorType.WriteNonLocal,
+		ident,
+		loc: node.loc,
+		node
+	};
 }
 
 function getTarget(patt: Expression | Pattern): string | null {
@@ -27,8 +34,4 @@ function getTarget(patt: Expression | Pattern): string | null {
 			return 'this';
 	}
 	return null;
-}
-
-function fpError(type: ErrorType, ident: string, loc: any, node: Node): FPError {
-	return { type, ident, loc, node };
 }

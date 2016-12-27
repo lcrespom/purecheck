@@ -2,6 +2,7 @@ const esprima = require('esprima');
 
 import { Node, Program, SourceLocation } from 'estree';
 import { checkSideEffect } from './side-effects';
+import { checkSideCause } from './side-causes';
 
 
 export default purecheck;
@@ -92,7 +93,7 @@ function walkTree(tree: Program, errors: FPError[]) {
 			case 'UpdateExpression':
 				return checkAssignOrUpdate(node, errors);
 			case 'Identifier':
-				return checkSideCause(node, errors);
+				return checkIdentifier(node, errors);
 		}
 	});
 }
@@ -113,43 +114,8 @@ function checkAssignOrUpdate(node, errors: FPError[]) {
 	addError(errors, checkSideEffect(node, mergeLocals(node)));
 }
 
-function checkSideCause(node, errors: FPError[]) {
-	if (skipSideCause(node)) return;
-	let locals = mergeLocals(node);
-	if (!locals.has(node.name))
-		addError(errors, {
-			type: node.name == 'this' ? ErrorType.ReadThis : ErrorType.ReadNonLocal,
-			ident: node.name,
-			loc: node.loc,
-			node
-		});
-}
-
-function skipSideCause(node): boolean {
-	if (!node.parent) return true;
-	// Skip function declaration identifiers
-	if (node.parent.type == 'FunctionDeclaration') return true;
-	// Skip function invocations (to be checked elsewhere)
-	if (node.parent.type == 'CallExpression') return true;
-	// Skip if update expression (handled by side effect)
-	if (node.parent.type == 'UpdateExpression') return true;
-
-	// Skip if left side of direct assignment
-	if (node.parent.type == 'AssignmentExpression'
-		&& node.parent.left == node) return true;
-
-	// Skip object property identifiers e.g. "obj.prop",
-	// But catch computed properties, e.g. "obj[prop]"
-	if (node.parent.type == 'MemberExpression'
-		&& node.parent.property == node) return !node.parent.computed;
-
-	if (!node.parent.parent) return false;
-	// TODO should climb tree until type != 'MemberExpression'
-	// If we are here, only consider skipping composite assignment expressions
-	// TODO also consider type == 'UpdateExpression'
-	if (node.parent.parent.type != 'AssignmentExpression') return false;
-	// Skip if left side of composite assignment (e.g. x.y = ...)
-	return node.parent.parent.left == node.parent;
+function checkIdentifier(node, errors: FPError[]) {
+	addError(errors, checkSideCause(node, mergeLocals(node)));
 }
 
 
