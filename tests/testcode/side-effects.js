@@ -1,7 +1,7 @@
 //--------------- Side effects ---------------
 
 function assignmentSideEffects() {
-	// Should issue 5 side effects
+	// Should issue 6 side effects
 	x = 1;
 	y.u = 2;
 	z[5] = 3;

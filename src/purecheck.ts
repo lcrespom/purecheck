@@ -1,6 +1,6 @@
 const esprima = require('esprima');
 
-import { Node, Program, SourceLocation, FunctionDeclaration } from 'estree';
+import { Node, Program, SourceLocation } from 'estree';
 import { checkSideEffect } from './side-effects';
 import { checkSideCause } from './side-causes';
 
@@ -44,7 +44,7 @@ function purecheck(code: string): FPError[] {
 /*
 	Side causes:
 		- Reading a non-local variable
-		- Reading from this (configurable)
+		- Reading from this
 		- Invoking a function with side causes (according to previous scan)
 		- Invoking a function from a blacklist
 	Side effects:

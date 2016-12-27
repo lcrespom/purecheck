@@ -17,3 +17,16 @@ function expressionsEverywhere() {
 	// Recursive Expression in return with side cause and effect (6 and 7)
 	return 2 * (a - b--);
 }
+
+function deepSideCause() {
+	let x = 4;
+	let y;
+	let t = {};
+	// Should generate 3 side causes: "a", "j" and "k"
+	y = a[2].b[3].c[x].d[j].e[t[k]];
+}
+
+function deepSideEffect() {
+	// Should generate one side effect ("a") and 2 side causes ("j" and "k")
+	a[2].b[3].c[x].d[j].e[t[k]] = 1;
+}

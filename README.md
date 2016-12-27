@@ -37,5 +37,9 @@ All these tasks are pending:
 
 ## ToDo
 - Improve report structure
-- Detect side causes
-- Make a second pass to detect invocation of functions with side effects
+  - Function map with separate arrays of side causes and effects
+- Make a second pass to detect invocation of functions with side causes/effects
+  - Should actually iterate until no new errors added (configurable)
+- Function blacklist / whitelist
+- Support deeply nested side causes / effects
+- Support ES6-style params: defaults, rest and destructuring
