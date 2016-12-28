@@ -18,6 +18,7 @@ function doReport(name) {
 	return report.functions;
 }
 
+
 //--------------- Test helpers ---------------
 
 function hasErrors(t, report, fname, expected, ofType) {
@@ -41,6 +42,7 @@ function checkError(t, e, name, type) {
 	let tname = ErrorType[type];
 	t.equal(e.type, type, `Error type for "${name}" should be ${tname}`);
 }
+
 
 //--------------- Test cases ---------------
 
