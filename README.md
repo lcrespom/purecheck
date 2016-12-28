@@ -40,6 +40,7 @@ Purecheck is in a very early stage. Check ToDo section below for details.
 - Improve report structure
   - Order errors by location (line and column in code)
   - Function map with separate arrays of side causes and effects
+- Detect side causes/effects in deeply nested member access, e.g. `a[2].b[3].c[x].d[j].e[t[k]];`
 - Make a second pass to detect invocation of functions with side causes/effects
   - Should actually iterate until no new errors added (configurable)
 - Function blacklist / whitelist
