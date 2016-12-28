@@ -25,7 +25,6 @@ export enum ErrorType {
 export interface FPError {
 	type: ErrorType;
 	ident: string;
-	loc: SourceLocation | undefined;
 	node: Node;
 }
 
@@ -59,10 +58,10 @@ function purecheck(code: string): FPErrorReport {
 
 function errorReport(errors: FPError[]): FPErrorReport {
 	errors.sort((e1, e2) => {
-		if (!e1.loc || !e2.loc) return 0;
-		let dline = e1.loc.start.line - e2.loc.start.line;
+		if (!e1.node.loc || !e2.node.loc) return 0;
+		let dline = e1.node.loc.start.line - e2.node.loc.start.line;
 		if (dline) return dline;
-		return e1.loc.start.column - e2.loc.start.column;
+		return e1.node.loc.start.column - e2.node.loc.start.column;
 	});
 	return {
 		errors,

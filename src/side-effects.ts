@@ -19,7 +19,6 @@ function fpError(ident: string, node: Node): FPError {
 	return {
 		type: ident == 'this' ? ErrorType.WriteThis : ErrorType.WriteNonLocal,
 		ident,
-		loc: node.loc,
 		node
 	};
 }

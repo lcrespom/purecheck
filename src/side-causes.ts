@@ -14,13 +14,11 @@ function fpError(node: Identifier | ThisExpression): FPError {
 	if (node.type == 'ThisExpression') return {
 		type: ErrorType.ReadThis,
 		ident: 'this',
-		loc: node.loc,
 		node
 	};
 	else return {
 		type: ErrorType.ReadNonLocal,
 		ident: node.name,
-		loc: node.loc,
 		node
 	};
 }
