@@ -16,10 +16,3 @@ function sideCauseThis(x, y) {
 	// Side cause: read from this member (2)
 	a = this.b[4];
 }
-
-function callsSideCause(x, y) {
-	// Side cause: call function with side cause (1)
-	sideCause(x, y);
-	// Side cause: call function with side cause (2)
-	sideCauseThis(x, y);
-}

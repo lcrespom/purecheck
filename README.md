@@ -43,3 +43,4 @@ All these tasks are pending:
 - Function blacklist / whitelist
 - Support deeply nested side causes / effects
 - Support ES6-style params: defaults, rest and destructuring
+- Test side causes and effects in `${expressions}` inside string templates

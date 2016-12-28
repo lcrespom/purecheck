@@ -10,11 +10,6 @@ function assignmentSideEffects() {
 	k.x++;
 }
 
-function invokeSideEffects(x) {
-	// Should issue 1 side effect
-	assignmentSideEffects();
-}
-
 function paramAssignments(x, y, z) {
 	// Should issue 3 side effects
 	x = 4;

@@ -36,7 +36,8 @@ function purecheck(code: string): FPError[] {
 		sourceType: 'module',
 	});
 	let errors = [];
-	walkTree(tree, errors);
+	walkTreeVars(tree);
+	walkTreeSideEC(tree, errors);
 	// TODO make a second pass to detect invocation of impure functions
 	return errors;
 }
@@ -56,7 +57,7 @@ function purecheck(code: string): FPError[] {
 
 // -------------------- Testing esprima-walk --------------------
 
-// Stolen and adapted from esprima-walk
+// Adapted from esprima-walk to skip properties starting with "fp_"
 function walkAddParent(ast, fn) {
 	let stack = [ast], i, j, key, len, node, child, subchild;
 	for (i = 0; i < stack.length; i += 1) {
@@ -82,13 +83,20 @@ function walkAddParent(ast, fn) {
 	}
 }
 
-function walkTree(tree: Program, errors: FPError[]) {
+function walkTreeVars(tree: Program) {
 	walkAddParent(tree, node => {
 		switch (node.type) {
 			case 'BlockStatement':
 				return initBlock(node);
 			case 'VariableDeclarator':
 				return addLocalVar(node);
+		}
+	});
+}
+
+function walkTreeSideEC(tree: Program, errors: FPError[]) {
+	walkAddParent(tree, node => {
+		switch (node.type) {
 			case 'AssignmentExpression':
 			case 'UpdateExpression':
 				return checkAssignOrUpdate(node, errors);

@@ -39,16 +39,16 @@ function hasErrors(t, report, fname, expected, ofType) {
 	let func = report[fname];
 	if (!func) {
 		t.equal(0, expected,
-			`Function ${fname} has ${expected} error(s)`);
+			`Function ${fname} should have ${expected} error(s)`);
 		return;
 	}
 	t.equal(func.errors.length, expected,
-		`Function "${fname}" has ${expected} error(s)`);
+		`Function "${fname}" should have ${expected} error(s)`);
 	if (ofType === undefined) return;
 	let tname = ErrorType[ofType];
 	for (let i = 0; i < func.errors.length; i++)
 		t.equal(func.errors[i].type, ofType,
-			`Error ${i} in function "${fname}" is of type ${tname}`);
+			`Error ${i} in function "${fname}" should be of type ${tname}`);
 }
 
 
@@ -58,7 +58,7 @@ test('Simple pure functions', t => {
 	let report = doReport('simple-pure');
 	t.ok(report, 'Report provided');
 	t.equal(Object.keys(report).length, 0,
-		'File "simple-pure" has no errors');
+		'File "simple-pure" should have no errors');
 	t.end();
 });
 
@@ -67,7 +67,6 @@ test('Side effects', t => {
 	hasErrors(t, report, 'assignmentSideEffects', 6, ErrorType.WriteNonLocal);
 	hasErrors(t, report, 'paramAssignments', 3, ErrorType.WriteNonLocal);
 	hasErrors(t, report, 'assignToThis', 2, ErrorType.WriteThis);
-	hasErrors(t, report, 'invokeSideEffects', 1, ErrorType.InvokeSideEffects);
 	t.end();
 });
 
@@ -75,6 +74,27 @@ test('Side causes', t => {
 	let report = doReport('side-causes');
 	hasErrors(t, report, 'sideCause', 2, ErrorType.ReadNonLocal);
 	hasErrors(t, report, 'sideCauseThis', 2, ErrorType.ReadThis);
-	hasErrors(t, report, 'callsSideCause', 2, ErrorType.InvokeSideCauses);
+	t.end();
+});
+
+test('Cascade', t => {
+	let report = doReport('cascade');
+	// Side causes
+	hasErrors(t, report, 'sideCause', 1, ErrorType.ReadNonLocal);
+	hasErrors(t, report, 'sideCauseThis', 1, ErrorType.ReadThis);
+	hasErrors(t, report, 'callSideCauses', 2, ErrorType.InvokeSideCauses);
+	hasErrors(t, report, 'callCallSideCauses', 1, ErrorType.InvokeSideCauses);
+	// Side effects
+	hasErrors(t, report, 'sideEffect', 1, ErrorType.WriteNonLocal);
+	hasErrors(t, report, 'sideEffectThis', 1, ErrorType.WriteThis);
+	hasErrors(t, report, 'callSideEffects', 2, ErrorType.InvokeSideEffects);
+	hasErrors(t, report, 'callCallSideEffects', 1, ErrorType.InvokeSideEffects);
+	t.end();
+});
+
+test('Recursive statements', t => {
+	let report = doReport('recur-stmt');
+	hasErrors(t, report, 'recursiveStatements', 5);
+	let errs = report.recursiveStatements.errors;
 	t.end();
 });
