@@ -14,7 +14,7 @@ function readFromStdIn(cb) {
 function processJS(buf) {
 	let tabSize = argv.tabsize || argv.t || '4';
 	buf = replaceTabs(parseInt(tabSize, 10), buf);
-	return report(purecheck(buf));
+	return report(purecheck(buf).errors);
 }
 
 function report(errors: FPError[]) {

@@ -29,7 +29,22 @@ export interface FPError {
 	node: Node;
 }
 
-function purecheck(code: string): FPError[] {
+export interface FunctionReport {
+	name: string;
+	loc: SourceLocation;
+	errors: FPError[];
+}
+
+type FunctionTable = { [fname: string]: FunctionReport; }
+
+export interface FPErrorReport {
+	errors: FPError[];
+	functions: FunctionTable;
+}
+
+// -------------------- Main --------------------
+
+function purecheck(code: string): FPErrorReport {
 	let tree = esprima.parse(code, {
 		loc: true,
 		comment: true,
@@ -39,11 +54,37 @@ function purecheck(code: string): FPError[] {
 	walkTreeVars(tree);
 	walkTreeSideEC(tree, errors);
 	// TODO make a second pass to detect invocation of impure functions
-	return errors;
+	return errorReport(errors);
 }
 
+function errorReport(errors: FPError[]): FPErrorReport {
+	errors.sort((e1, e2) => {
+		if (!e1.loc || !e2.loc) return 0;
+		let dline = e1.loc.start.line - e2.loc.start.line;
+		if (dline) return dline;
+		return e1.loc.start.column - e2.loc.start.column;
+	});
+	return {
+		errors,
+		functions: groupByFunction(errors)
+	};
+}
 
-// -------------------- Testing esprima-walk --------------------
+function groupByFunction(errors: FPError[]): FunctionTable {
+	// TODO path function names by scope
+	let funcs: FunctionTable = {};
+	for (let e of errors) {
+		let fnode = findParentFunction(e.node);
+		if (!fnode) continue;
+		let name = fnode.id.name;
+		if (!funcs[name])
+			funcs[name] = { name, errors: [], loc: fnode.loc };
+		funcs[name].errors.push(e);
+	}
+	return funcs;
+}
+
+// -------------------- Tree walk --------------------
 
 // Adapted from esprima-walk to skip properties starting with "fp_"
 // Warning: walk is not recursive and may visit nodes that appear later

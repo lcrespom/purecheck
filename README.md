@@ -37,9 +37,10 @@ Purecheck is in a very early stage. Check ToDo section below for details.
 
 
 ## ToDo
-- Improve report structure
-  - Order errors by location (line and column in code)
-  - Function map with separate arrays of side causes and effects
+- Make `main.ts` useful
+	- Proper report
+	- Parameters / configuration
+	- Make it available in ./bin, see http://blog.npmjs.org/post/118810260230/building-a-simple-command-line-tool-with-npm
 - Detect side causes/effects in deeply nested member access, e.g. `a[2].b[3].c[x].d[j].e[t[k]];`
 - Make a second pass to detect invocation of functions with side causes/effects
   - Should actually iterate until no new errors added (configurable)

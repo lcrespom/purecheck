@@ -10,7 +10,8 @@ function recursiveExpressions() {
 function expressionsEverywhere() {
 	// Expression in var decl assignment with side effect (1)
 	let x = a++;
-	// Expression in for loop with side cause (2, 3) and side effect (4)
+	// Expression in for loop with side effect (2), side cause (3),
+	// 	and side effect (4)
 	for (i = 0; i < 4; i++) x--;
 	// Expresion in while condition with side effect (5)
 	while (y++) x++;
@@ -27,6 +28,7 @@ function deepSideCause() {
 }
 
 function deepSideEffect() {
-	// Should generate one side effect ("a") and 2 side causes ("j" and "k")
-	a[2].b[3].c[x].d[j].e[t[k]] = 1;
+	let x = 4, t = [];
+	// Should generate 3 side effects: "a", "j" and "k"
+	a[2].b[3].c[x].d[j++].e[t[k--]] = 1;
 }

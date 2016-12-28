@@ -4,7 +4,6 @@ const test = require('tape');
 const pcheck = require('../../lib/purecheck');
 const purecheck = pcheck.default;
 const ErrorType = pcheck.ErrorType;
-const findParentFunction = pcheck.findParentFunction;
 
 
 //--------------- File checking for purity ---------------
@@ -14,24 +13,10 @@ function readTestFile(name) {
 	return fs.readFileSync(fullName, 'utf8');
 }
 
-function groupByFunction(errors) {
-	let funcs = {};
-	for (let e of errors) {
-		let fnode = findParentFunction(e.node);
-		if (!fnode) continue;
-		let name = fnode.id.name;
-		if (!funcs[name])
-			funcs[name] = { name, errors: [] };
-		funcs[name].errors.push(e);
-	}
-	return funcs;
+function doReport(name) {
+	let report = purecheck(readTestFile(name));
+	return report.functions;
 }
-
-function doReport(fname) {
-	let file = readTestFile(fname);
-	return groupByFunction(purecheck(file));
-}
-
 
 //--------------- Test helpers ---------------
 
@@ -88,8 +73,8 @@ test('Recursive statements', t => {
 	let errs = report.recursiveStatements.errors;
 	checkError(t, errs[0], 'm', ErrorType.ReadNonLocal);
 	checkError(t, errs[1], 'a', ErrorType.ReadNonLocal);
-	checkError(t, errs[2], 'g', ErrorType.ReadNonLocal);
-	checkError(t, errs[3], 'g', ErrorType.WriteNonLocal);
+	checkError(t, errs[2], 'g', ErrorType.WriteNonLocal);
+	checkError(t, errs[3], 'g', ErrorType.ReadNonLocal);
 	checkError(t, errs[4], 'e', ErrorType.WriteNonLocal);
 	t.end();
 });
@@ -104,10 +89,17 @@ test('Recursive expressions', t => {
 	// expressionsEverywhere
 	hasErrors(t, report, 'expressionsEverywhere', 7);
 	errs = report.expressionsEverywhere.errors;
-	// checkError(t, errs[0], 'a', ErrorType.WriteNonLocal);
-	// checkError(t, errs[1], 'i', ErrorType.ReadNonLocal);
-	// checkError(t, errs[2], 'i', ErrorType.ReadNonLocal);
-	// checkError(t, errs[3], 'i', ErrorType.WriteNonLocal);
+	checkError(t, errs[0], 'a', ErrorType.WriteNonLocal);
+	checkError(t, errs[1], 'i', ErrorType.WriteNonLocal);
+	checkError(t, errs[2], 'i', ErrorType.ReadNonLocal);
+	checkError(t, errs[3], 'i', ErrorType.WriteNonLocal);
+	checkError(t, errs[4], 'y', ErrorType.WriteNonLocal);
+	checkError(t, errs[5], 'a', ErrorType.ReadNonLocal);
+	checkError(t, errs[6], 'b', ErrorType.WriteNonLocal);
+	// deepSideCause
+	hasErrors(t, report, 'deepSideCause', 3, ErrorType.ReadNonLocal);
+	// deepSideEffect
+	hasErrors(t, report, 'deepSideEffect', 3, ErrorType.WriteNonLocal);
 	t.end();
 });
 
