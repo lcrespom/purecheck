@@ -27,34 +27,25 @@ function fpError(node: Identifier | ThisExpression): FPError {
 
 function skipSideCause(node): boolean {
 	if (!node.parent) return true;
-	// Skip function declaration identifiers
-	if (node.parent.type == 'FunctionDeclaration') return true;
-	// Skip function invocations (to be checked elsewhere)
-	if (node.parent.type == 'CallExpression') return true;
-	// Skip if update expression (handled by side effect)
-	if (node.parent.type == 'UpdateExpression') return true;
-
-	// Skip if left side of direct assignment
-	if (node.parent.type == 'AssignmentExpression'
-		&& node.parent.left == node) return true;
-
-	if (node.parent.type == 'MemberExpression') {
+	switch (node.parent.type) {
+		// Skip function declaration identifiers
+		case 'FunctionDeclaration':
+			return true;
+		// Skip function invocations (to be checked elsewhere)
+		case 'CallExpression':
+			return true;
+		// Skip if update expression (handled by side effect)
+		case 'UpdateExpression':
+			return true;
+		// Skip if left side of direct assignment
+		case 'AssignmentExpression':
+			return node.parent.left == node;
 		// Skip object property identifiers e.g. "obj.prop",
 		// But catch computed properties, e.g. "obj[prop]"
-		if (node.parent.property == node) return !node.parent.computed;
-		return skipSideCause(node.parent);
+		case 'MemberExpression':
+			if (node.parent.property == node) return !node.parent.computed;
+			return skipSideCause(node.parent);
+		default:
+			return false;
 	}
-	return false;
-	// // Skip object property identifiers e.g. "obj.prop",
-	// // But catch computed properties, e.g. "obj[prop]"
-	// if (node.parent.type == 'MemberExpression'
-	// 	&& node.parent.property == node) return !node.parent.computed;
-
-	// if (!node.parent.parent) return false;
-	// // TODO should climb tree until type != 'MemberExpression'
-	// // If we are here, only consider skipping composite assignment expressions
-	// if (node.parent.parent.type == 'UpdateExpression') return true;
-	// if (node.parent.parent.type != 'AssignmentExpression') return false;
-	// // Skip if left side of composite assignment (e.g. x.y = ...)
-	// return node.parent.parent.left == node.parent;
 }
