@@ -51,6 +51,11 @@ function hasErrors(t, report, fname, expected, ofType) {
 			`Error ${i} in function "${fname}" should be of type ${tname}`);
 }
 
+function checkError(t, e, name, type) {
+	t.equal(e.ident, name, 'Identifier name should be ' + name);
+	let tname = ErrorType[type];
+	t.equal(e.type, type, `Error type for "${name}" should be ${tname}`);
+}
 
 //--------------- Test cases ---------------
 
@@ -77,6 +82,18 @@ test('Side causes', t => {
 	t.end();
 });
 
+test('Recursive statements', t => {
+	let report = doReport('recur-stmt');
+	hasErrors(t, report, 'recursiveStatements', 5);
+	let errs = report.recursiveStatements.errors;
+	checkError(t, errs[0], 'm', ErrorType.ReadNonLocal);
+	checkError(t, errs[1], 'a', ErrorType.ReadNonLocal);
+	checkError(t, errs[2], 'g', ErrorType.ReadNonLocal);
+	checkError(t, errs[3], 'g', ErrorType.WriteNonLocal);
+	checkError(t, errs[4], 'e', ErrorType.WriteNonLocal);
+	t.end();
+});
+
 test('Cascade', t => {
 	let report = doReport('cascade');
 	// Side causes
@@ -89,12 +106,5 @@ test('Cascade', t => {
 	hasErrors(t, report, 'sideEffectThis', 1, ErrorType.WriteThis);
 	hasErrors(t, report, 'callSideEffects', 2, ErrorType.InvokeSideEffects);
 	hasErrors(t, report, 'callCallSideEffects', 1, ErrorType.InvokeSideEffects);
-	t.end();
-});
-
-test('Recursive statements', t => {
-	let report = doReport('recur-stmt');
-	hasErrors(t, report, 'recursiveStatements', 5);
-	let errs = report.recursiveStatements.errors;
 	t.end();
 });

@@ -19,28 +19,30 @@ Purecheck generates a report listing all scanned functions along with their asso
 `npm start < file_to_check.js`
 
 ## Notice
-Purecheck is in a very early stage. For now, it only detects variable modification side effects from top-level functions.
-All these tasks are pending:
-- Recursive scan of function declarations at any level inside the code.
-- Support ES6 modules to recursively scan dependencies.
-- Check for function calls to functions with side effects (multiple passes required).
-- Check for function calls to functions known to have side effects, from a user-provided black list.
-- Check for side causes from accessing non-local variables.
-- Check for function calls to functions with side causes (multiple passes required).
-- Check for function cals to functions known to have side causes, from a user-provided black list.
+Purecheck is in a very early stage. Check ToDo section below for details.
 
+## Rules for pure functions
+1. Should not have side causes, i.e., should not:
+		1. Read a non-local variable
+		2. Read from `this`
+		3. Invoke a function with side causes (requires multiple passes)
+2. Should not have side effects, i.e., should not:
+		1. Write to a non-local variable
+		2. Write to a parameter
+    3. Write to `this`
+		4. Invoke a function with side effects (requires multiple passes)
+3. Should not invoke a function from a blacklist of non-pure functions
+4. Alternatively, should only invoke its own pure functions and functions in a whitelist of safe functions
+5. Pure functions should explicitly return some value. Otherwise, if they don't have side effects and return nothing, they are useless and their invocation can be replaced by `undefined`.
 
-## Environment
-- TypeScript
-- Functional style, consider Ramda
-- Automated testing based on set of testing files + test specs (maybe test itself)
 
 ## ToDo
 - Improve report structure
+  - Order errors by location (line and column in code)
   - Function map with separate arrays of side causes and effects
 - Make a second pass to detect invocation of functions with side causes/effects
   - Should actually iterate until no new errors added (configurable)
 - Function blacklist / whitelist
-- Support deeply nested side causes / effects
+- Check for return in all branches
 - Support ES6-style params: defaults, rest and destructuring
 - Test side causes and effects in `${expressions}` inside string templates

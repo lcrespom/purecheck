@@ -42,22 +42,12 @@ function purecheck(code: string): FPError[] {
 	return errors;
 }
 
-/*
-	Side causes:
-		- Reading a non-local variable
-		- Reading from this
-		- Invoking a function with side causes (according to previous scan)
-		- Invoking a function from a blacklist
-	Side effects:
-		- Writing to a non-local variable
-		- Writing to a parameter member (including this)
-		- Invoking a function with side effects (according to previous scan)
-		- Invoking a function from a blacklist
-*/
 
 // -------------------- Testing esprima-walk --------------------
 
 // Adapted from esprima-walk to skip properties starting with "fp_"
+// Warning: walk is not recursive and may visit nodes that appear later
+// 		in the code before visiting other nodes that appear earlier in the code
 function walkAddParent(ast, fn) {
 	let stack = [ast], i, j, key, len, node, child, subchild;
 	for (i = 0; i < stack.length; i += 1) {
