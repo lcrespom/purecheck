@@ -94,6 +94,23 @@ test('Recursive statements', t => {
 	t.end();
 });
 
+test('Recursive expressions', t => {
+	let report = doReport('recur-expr');
+	// recursiveExpressions
+	hasErrors(t, report, 'recursiveExpressions', 2);
+	let errs = report.recursiveExpressions.errors;
+	checkError(t, errs[0], 'z', ErrorType.ReadNonLocal);
+	checkError(t, errs[1], 't', ErrorType.WriteNonLocal);
+	// expressionsEverywhere
+	hasErrors(t, report, 'expressionsEverywhere', 7);
+	errs = report.expressionsEverywhere.errors;
+	// checkError(t, errs[0], 'a', ErrorType.WriteNonLocal);
+	// checkError(t, errs[1], 'i', ErrorType.ReadNonLocal);
+	// checkError(t, errs[2], 'i', ErrorType.ReadNonLocal);
+	// checkError(t, errs[3], 'i', ErrorType.WriteNonLocal);
+	t.end();
+});
+
 test('Cascade', t => {
 	let report = doReport('cascade');
 	// Side causes
