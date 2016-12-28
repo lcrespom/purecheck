@@ -27,11 +27,13 @@ function fpError(ident: string, node: Node): FPError {
 function getTarget(patt: Expression | Pattern): string | null {
 	if (patt.type == 'Identifier')
 		return patt.name;
-	else if (patt.type == 'MemberExpression') {
+	while (patt.type == 'MemberExpression') {
 		if (patt.object.type == 'Identifier')
 			return patt.object.name;
 		else if (patt.object.type == 'ThisExpression')
 			return 'this';
+		// Drill down tree until patt.object is not 'MemberExpression'
+		else patt = patt.object as Expression;
 	}
 	return null;
 }
