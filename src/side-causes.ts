@@ -38,16 +38,23 @@ function skipSideCause(node): boolean {
 	if (node.parent.type == 'AssignmentExpression'
 		&& node.parent.left == node) return true;
 
-	// Skip object property identifiers e.g. "obj.prop",
-	// But catch computed properties, e.g. "obj[prop]"
-	if (node.parent.type == 'MemberExpression'
-		&& node.parent.property == node) return !node.parent.computed;
+	if (node.parent.type == 'MemberExpression') {
+		// Skip object property identifiers e.g. "obj.prop",
+		// But catch computed properties, e.g. "obj[prop]"
+		if (node.parent.property == node) return !node.parent.computed;
+		return skipSideCause(node.parent);
+	}
+	return false;
+	// // Skip object property identifiers e.g. "obj.prop",
+	// // But catch computed properties, e.g. "obj[prop]"
+	// if (node.parent.type == 'MemberExpression'
+	// 	&& node.parent.property == node) return !node.parent.computed;
 
-	if (!node.parent.parent) return false;
-	// TODO should climb tree until type != 'MemberExpression'
-	// If we are here, only consider skipping composite assignment expressions
-	if (node.parent.parent.type == 'UpdateExpression') return true;
-	if (node.parent.parent.type != 'AssignmentExpression') return false;
-	// Skip if left side of composite assignment (e.g. x.y = ...)
-	return node.parent.parent.left == node.parent;
+	// if (!node.parent.parent) return false;
+	// // TODO should climb tree until type != 'MemberExpression'
+	// // If we are here, only consider skipping composite assignment expressions
+	// if (node.parent.parent.type == 'UpdateExpression') return true;
+	// if (node.parent.parent.type != 'AssignmentExpression') return false;
+	// // Skip if left side of composite assignment (e.g. x.y = ...)
+	// return node.parent.parent.left == node.parent;
 }
