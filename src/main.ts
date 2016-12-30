@@ -3,6 +3,20 @@ import { argv } from 'yargs';
 import purecheck, { FPError, FPErrorReport, ErrorType } from './purecheck';
 
 
+// -------------------- I/O and CLI --------------------
+
+function readFile(cb: (buf: string) => void) {
+	if (argv._.length > 0) {
+		fs.readFile(argv._[0], 'utf8', (error, data) => {
+			if (error) throw Error('Could not read file: ' + error);
+			cb(data);
+		});
+	}
+	else {
+		readFromStdIn(cb);
+	}
+}
+
 function readFromStdIn(cb) {
 	let buf = '';
 	process.stdin.setEncoding('utf8');
@@ -11,11 +25,19 @@ function readFromStdIn(cb) {
 	process.stdin.resume();
 }
 
+function replaceTabs(tabs: number, buf: string): string {
+	let spaces = new Array(tabs + 1).join(' ');
+	return buf.replace(/\t/g, spaces);
+}
+
 function processJS(buf: string): FPErrorReport {
 	let tabSize = argv.tabsize || argv.t || '4';
 	buf = replaceTabs(parseInt(tabSize, 10), buf);
 	return purecheck(buf);
 }
+
+
+// -------------------- Result reporting --------------------
 
 function printReport(report: FPErrorReport) {
 	let checkPlural = num => num == 1 ? '' : 's';
@@ -50,34 +72,7 @@ function typeMsg(type: ErrorType, name: string) {
 	}
 }
 
-function readFile(cb: (buf: string) => void) {
-	if (argv._.length > 0) {
-		cb(fs.readFileSync(argv._[0], 'utf8'));
-	}
-	else {
-		readFromStdIn(cb);
-	}
-}
+
+// -------------------- Main --------------------
 
 readFile(buf => printReport(processJS(buf)));
-
-
-// --------------- Misc formatting utils ---------------
-
-function location(loc): string {
-	return `(line ${loc.line}, col ${loc.column})`;
-}
-
-function customStringify(key, value) {
-	if (value instanceof Set)
-		return `Set{ ${Array.from(value.values()).join(', ')} }`;
-	else if (key == 'loc' && value)
-		return location(value.start) + ' - ' + location(value.end);
-	else
-		return value;
-}
-
-function replaceTabs(tabs: number, buf: string): string {
-	let spaces = new Array(tabs + 1).join(' ');
-	return buf.replace(/\t/g, spaces);
-}
