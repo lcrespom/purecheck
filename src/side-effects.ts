@@ -1,6 +1,6 @@
 import { Node, Expression, Pattern } from 'estree';
 
-import { ErrorType, FPError } from './purecheck';
+import { ErrorType, FPError, findParentFunction } from './purecheck';
 
 
 export function checkSideEffect(expr: Expression, locals: Set<string>): FPError | null {
@@ -15,11 +15,14 @@ export function checkSideEffect(expr: Expression, locals: Set<string>): FPError 
 		return null;
 }
 
-function fpError(ident: string, node: Node): FPError {
+function fpError(ident: string, node: Node): FPError | null {
+	let fnode = findParentFunction(node);
+	if (!fnode) return null;
 	return {
 		type: ident == 'this' ? ErrorType.WriteThis : ErrorType.WriteNonLocal,
 		ident,
-		node
+		node,
+		fnode
 	};
 }
 

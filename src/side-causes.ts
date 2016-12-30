@@ -1,5 +1,5 @@
 import { Identifier, ThisExpression } from 'estree';
-import { ErrorType, FPError } from './purecheck';
+import { ErrorType, FPError, findParentFunction } from './purecheck';
 
 
 export function checkSideCause(node: Identifier, locals: Set<string>): FPError | null {
@@ -10,17 +10,19 @@ export function checkSideCause(node: Identifier, locals: Set<string>): FPError |
 		return null;
 }
 
-function fpError(node: Identifier | ThisExpression): FPError {
-	if (node.type == 'ThisExpression') return {
-		type: ErrorType.ReadThis,
-		ident: 'this',
-		node
-	};
-	else return {
-		type: ErrorType.ReadNonLocal,
-		ident: node.name,
-		node
-	};
+function fpError(node: Identifier | ThisExpression): FPError | null {
+	let fnode = findParentFunction(node);
+	if (!fnode) return null;
+	let ident, type;
+	if (node.type == 'ThisExpression') {
+		ident = 'this';
+		type = ErrorType.ReadThis;
+	}
+	else {
+		ident = node.name;
+		type = ErrorType.ReadNonLocal;
+	}
+	return { type, ident, node, fnode };
 }
 
 function skipSideCause(node): boolean {

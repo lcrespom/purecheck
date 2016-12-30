@@ -38,13 +38,19 @@ Purecheck is in a very early stage. Check ToDo section below for details.
 
 ## ToDo
 - Make `main.ts` useful
-	- Proper report
+	- Improve report
 	- Parameters / configuration
 	- Make it available in ./bin, see http://blog.npmjs.org/post/118810260230/building-a-simple-command-line-tool-with-npm
+- Check for:
+	- Cascading of side cause / side effects: make a second pass to detect invocation of functions with side causes/effects
+		- Should actually iterate until no new errors added (configurable)
+	- All branches should return some value
+	- Side causes and effects in `${expressions}` inside string templates
+	- Side cause: invocation of member function of object that is not a local variable nor a parameter. This is just one more case of ErrorType.ReadNonLocal.
+- Support all kinds of function definition
+	- Function expression
+	- Arrow function expression
 - Ensure only code inside functions is checked
-- Make a second pass to detect invocation of functions with side causes/effects
-  - Should actually iterate until no new errors added (configurable)
 - Function blacklist / whitelist
-- Check for return in all branches
 - Support ES6-style params: defaults, rest and destructuring
-- Test side causes and effects in `${expressions}` inside string templates
+- Check for source maps, and if present, use them to translate error locations. This would provide support for TypeScript (and potentially other similar languages)

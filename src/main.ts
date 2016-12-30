@@ -1,6 +1,6 @@
 const fs = require('fs');
 import { argv } from 'yargs';
-import purecheck, { FPError } from './purecheck';
+import purecheck, { FPError, FPErrorReport, ErrorType } from './purecheck';
 
 
 function readFromStdIn(cb) {
@@ -11,25 +11,46 @@ function readFromStdIn(cb) {
 	process.stdin.resume();
 }
 
-function processJS(buf) {
+function processJS(buf: string): FPErrorReport {
 	let tabSize = argv.tabsize || argv.t || '4';
 	buf = replaceTabs(parseInt(tabSize, 10), buf);
-	return report(purecheck(buf).errors);
+	return purecheck(buf);
 }
 
-function report(errors: FPError[]) {
-	// TODO: sort if required, count error types, add descrptive text, etc.
-	return errors;
-}
-
-function printReport(report) {
+function printReport(report: FPErrorReport) {
 	let checkPlural = num => num == 1 ? '' : 's';
-	console.log(JSON.stringify(report, customStringify, 4));
-	console.log('--------------------\n');
-	console.log(`${report.length} error${checkPlural(report.length)}`);
+	for (let e of report.errors)
+		printErrorReport(e);
+	console.log('--------------------');
+	let nerrs = report.errors.length;
+	console.log(`${nerrs} error${checkPlural(nerrs)}`);
 }
 
-function readFile(cb) {
+function printErrorReport(e: FPError) {
+	if (!e.node.loc)
+		throw Error('Location should be available');
+	let line = e.node.loc.start.line;
+	let col = e.node.loc.start.column;
+	let type = typeMsg(e.type, e.ident);
+	console.log(`Impure function error at (${line}, ${col}): ${type}`);
+}
+
+function typeMsg(type: ErrorType, name: string) {
+	switch (type) {
+		case ErrorType.ReadThis:
+			return '"this" should not be accessed';
+		case ErrorType.ReadNonLocal:
+			return 'Only local variables or parameters should be accessed';
+		case ErrorType.WriteThis:
+			return '"this" should not be updated';
+		case ErrorType.WriteNonLocal:
+			return 'Only local variables can be updated';
+		default:
+			throw Error(`Unrecognized error type: ${type}/${ErrorType[type]}`);
+	}
+}
+
+function readFile(cb: (buf: string) => void) {
 	if (argv._.length > 0) {
 		cb(fs.readFileSync(argv._[0], 'utf8'));
 	}

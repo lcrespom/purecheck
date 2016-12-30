@@ -1,6 +1,6 @@
 const esprima = require('esprima');
 
-import { Node, Program, SourceLocation } from 'estree';
+import { Node, Program, SourceLocation, FunctionDeclaration } from 'estree';
 import { checkSideEffect } from './side-effects';
 import { checkSideCause } from './side-causes';
 
@@ -26,11 +26,12 @@ export interface FPError {
 	type: ErrorType;
 	ident: string;
 	node: Node;
+	fnode: FunctionDeclaration;
 }
 
 export interface FunctionReport {
 	name: string;
-	loc: SourceLocation;
+	loc?: SourceLocation;
 	errors: FPError[];
 }
 
@@ -73,15 +74,14 @@ function groupByFunction(errors: FPError[]): FunctionTable {
 	// TODO path function names by scope
 	let funcs: FunctionTable = {};
 	for (let e of errors) {
-		let fnode = findParentFunction(e.node);
-		if (!fnode) continue;
-		let name = fnode.id.name;
+		let name = e.fnode.id.name;
 		if (!funcs[name])
-			funcs[name] = { name, errors: [], loc: fnode.loc };
+			funcs[name] = { name, errors: [], loc: e.fnode.loc };
 		funcs[name].errors.push(e);
 	}
 	return funcs;
 }
+
 
 // -------------------- Tree walk --------------------
 
