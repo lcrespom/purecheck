@@ -14,15 +14,14 @@ function readTestFile(name) {
 }
 
 function doReport(name) {
-	let report = purecheck(readTestFile(name));
-	return report.functions;
+	return purecheck(readTestFile(name));
 }
 
 
 //--------------- Test helpers ---------------
 
 function hasErrors(t, report, fname, expected, ofType) {
-	let func = report[fname];
+	let func = report.functions[fname];
 	if (!func) {
 		t.equal(0, expected,
 			`Function ${fname} should have ${expected} error(s)`);
@@ -46,38 +45,43 @@ function checkError(t, e, name, type) {
 
 //--------------- Test cases ---------------
 
-test('Simple pure functions', t => {
+test('Simple pure functions: no false positives', t => {
 	let report = doReport('simple-pure');
 	t.ok(report, 'Report provided');
-	t.equal(Object.keys(report).length, 0,
+	t.equal(Object.keys(report.errors).length, 0,
 		'File "simple-pure" should have no errors');
 	t.end();
 });
 
-test('Side effects', t => {
+test('Side cause detection', t => {
+	let report = doReport('side-causes');
+	hasErrors(t, report, 'sideCause', 2, ErrorType.ReadNonLocal);
+	hasErrors(t, report, 'sideCauseThis', 2, ErrorType.ReadThis);
+	t.equal(report.errors.length, 4, 'No unexpected errors');
+	t.end();
+});
+
+test('Side effect detection', t => {
 	let report = doReport('side-effects');
 	hasErrors(t, report, 'assignmentSideEffects', 6, ErrorType.WriteNonLocal);
 	hasErrors(t, report, 'paramAssignments', 3, ErrorType.WriteNonLocal);
 	hasErrors(t, report, 'assignToThis', 2, ErrorType.WriteThis);
-	t.end();
-});
-
-test('Side causes', t => {
-	let report = doReport('side-causes');
-	hasErrors(t, report, 'sideCause', 2, ErrorType.ReadNonLocal);
-	hasErrors(t, report, 'sideCauseThis', 2, ErrorType.ReadThis);
+	hasErrors(t, report, 'changeGlobal', 1, ErrorType.WriteNonLocal);
+	hasErrors(t, report, 'nested/child', 1, ErrorType.WriteNonLocal);
+	t.equal(report.errors.length, 13, 'No unexpected errors');
 	t.end();
 });
 
 test('Recursive statements', t => {
 	let report = doReport('recur-stmt');
 	hasErrors(t, report, 'recursiveStatements', 5);
-	let errs = report.recursiveStatements.errors;
+	let errs = report.functions.recursiveStatements.errors;
 	checkError(t, errs[0], 'm', ErrorType.ReadNonLocal);
 	checkError(t, errs[1], 'a', ErrorType.ReadNonLocal);
 	checkError(t, errs[2], 'g', ErrorType.WriteNonLocal);
 	checkError(t, errs[3], 'g', ErrorType.ReadNonLocal);
 	checkError(t, errs[4], 'e', ErrorType.WriteNonLocal);
+	t.equal(report.errors.length, 5, 'No unexpected errors');
 	t.end();
 });
 
@@ -85,12 +89,12 @@ test('Recursive expressions', t => {
 	let report = doReport('recur-expr');
 	// recursiveExpressions
 	hasErrors(t, report, 'recursiveExpressions', 2);
-	let errs = report.recursiveExpressions.errors;
+	let errs = report.functions.recursiveExpressions.errors;
 	checkError(t, errs[0], 'z', ErrorType.ReadNonLocal);
 	checkError(t, errs[1], 't', ErrorType.WriteNonLocal);
 	// expressionsEverywhere
 	hasErrors(t, report, 'expressionsEverywhere', 7);
-	errs = report.expressionsEverywhere.errors;
+	errs = report.functions.expressionsEverywhere.errors;
 	checkError(t, errs[0], 'a', ErrorType.WriteNonLocal);
 	checkError(t, errs[1], 'i', ErrorType.WriteNonLocal);
 	checkError(t, errs[2], 'i', ErrorType.ReadNonLocal);
@@ -102,6 +106,15 @@ test('Recursive expressions', t => {
 	hasErrors(t, report, 'deepSideCause', 3, ErrorType.ReadNonLocal);
 	// deepSideEffect
 	hasErrors(t, report, 'deepSideEffect', 3, ErrorType.WriteNonLocal);
+	t.equal(report.errors.length, 15, 'No unexpected errors');
+	t.end();
+});
+
+test('Code outside functions should be ignored', t => {
+	let report = doReport('globals');
+	hasErrors(t, report, 'sideCause', 1, ErrorType.ReadNonLocal);
+	hasErrors(t, report, 'sideEffect', 1, ErrorType.WriteNonLocal);
+	t.equal(report.errors.length, 2, 'No unexpected errors');
 	t.end();
 });
 
@@ -117,5 +130,6 @@ test('Cascade', t => {
 	hasErrors(t, report, 'sideEffectThis', 1, ErrorType.WriteThis);
 	hasErrors(t, report, 'callSideEffects', 2, ErrorType.InvokeSideEffects);
 	hasErrors(t, report, 'callCallSideEffects', 1, ErrorType.InvokeSideEffects);
+	t.equal(report.errors.length, 10, 'No unexpected errors');
 	t.end();
 });

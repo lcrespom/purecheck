@@ -29,3 +29,9 @@ function changeGlobal() {
 	// Should issue 1 side effect
 	global = 2;
 }
+
+function nested() {
+	function child() {
+		foo = 3;
+	}
+}

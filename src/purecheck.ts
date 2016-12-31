@@ -74,12 +74,20 @@ function groupByFunction(errors: FPError[]): FunctionTable {
 	// TODO path function names by scope
 	let funcs: FunctionTable = {};
 	for (let e of errors) {
-		let name = e.fnode.id.name;
+		let name = fname(e.fnode);
 		if (!funcs[name])
 			funcs[name] = { name, errors: [], loc: e.fnode.loc };
 		funcs[name].errors.push(e);
 	}
 	return funcs;
+}
+
+function fname(node): string {
+	let name = node.id.name;
+	let pf = findParentFunction(node);
+	if (pf)
+		name = fname(pf) + '/' + name;
+	return name;
 }
 
 
