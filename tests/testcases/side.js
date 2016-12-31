@@ -136,6 +136,6 @@ test('Cascade: detect invocation to own non-pure functions', t => {
 
 test('Function expressions', t => {
 	let report = doReport('func-expr');
-	t.equal(report.errors.length(4));
+	t.equal(report.errors.length, 4, 'Detect all errors');
 	t.end();
 });
