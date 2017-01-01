@@ -18,3 +18,19 @@ function sideCauseThis(x, y) {
 	// Side cause: read from this member (2)
 	a = this.b[4];
 }
+
+function noErrorsHere(x, y) {
+	x.fooBar();
+	return x[y];
+}
+
+function sideCauseInvokeFunction(x) {
+	// This is allowed
+	x.f1();
+	x.y[3].z.f2();
+	// Side cause: invoke member function of non-local (1)
+	foo.f3();
+	// Side cause: invoke member function of non-local, nested (2)
+	foo.a.b[3].c.f4();
+
+}

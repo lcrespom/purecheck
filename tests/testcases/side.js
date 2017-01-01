@@ -57,7 +57,8 @@ test('Side cause detection', t => {
 	let report = doReport('side-causes');
 	hasErrors(t, report, 'sideCause', 3, ErrorType.ReadNonLocal);
 	hasErrors(t, report, 'sideCauseThis', 2, ErrorType.ReadThis);
-	t.equal(report.errors.length, 5, 'No unexpected errors');
+	hasErrors(t, report, 'sideCauseInvokeFunction', 2, ErrorType.ReadNonLocal);
+	t.equal(report.errors.length, 7, 'No unexpected errors');
 	t.end();
 });
 

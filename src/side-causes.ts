@@ -3,7 +3,7 @@ import { ErrorType, FPError, findParentFunction } from './purecheck';
 
 
 export function checkSideCause(node: Identifier, locals: Set<string>): FPError | null {
-	if (skipSideCause(node)) return null;
+	if (skipSideCause(node, 0)) return null;
 	if (!locals.has(node.name))
 		return fpError(node);
 	else
@@ -25,7 +25,7 @@ function fpError(node: Identifier | ThisExpression): FPError | null {
 	return { type, ident, node, fnode };
 }
 
-function skipSideCause(node): boolean {
+function skipSideCause(node, level: number): boolean {
 	if (!node.parent) return true;
 	switch (node.parent.type) {
 		// Skip function declaration/expression identifiers
@@ -34,7 +34,7 @@ function skipSideCause(node): boolean {
 			return true;
 		// Skip function invocations (to be checked elsewhere)
 		case 'CallExpression':
-			return true;
+			return level == 0;
 		// Skip if update expression (handled by side effect)
 		case 'UpdateExpression':
 			return true;
@@ -45,7 +45,7 @@ function skipSideCause(node): boolean {
 		// But catch computed properties, e.g. "obj[prop]"
 		case 'MemberExpression':
 			if (node.parent.property == node) return !node.parent.computed;
-			return skipSideCause(node.parent);
+			return skipSideCause(node.parent, level + 1);
 		default:
 			return false;
 	}

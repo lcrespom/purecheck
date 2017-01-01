@@ -46,7 +46,6 @@ Purecheck is still under development. Check ToDo section below for details.
 	- Cascading of side cause / side effects: make a second pass to detect invocation of functions with side causes/effects
 		- Should actually iterate until no new errors added (configurable)
 	- All branches should return some value
-	- Side cause: invocation of member function of object that is not a local variable nor a parameter. This is just one more case of ErrorType.ReadNonLocal.
 - Function blacklist / whitelist
 - Support ES6-style params: defaults, rest and destructuring
 - Check for source maps, and if present, use them to translate error locations. This would provide support for TypeScript (and potentially other similar languages)
