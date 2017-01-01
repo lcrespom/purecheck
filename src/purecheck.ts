@@ -134,6 +134,7 @@ function walkAddParent(ast, fn) {
 
 function walkTreeVars(tree: Program) {
 	walkAddParent(tree, node => {
+		if (!node || !node.type) return;
 		switch (node.type) {
 			case 'BlockStatement':
 				return initBlock(node);
@@ -145,6 +146,7 @@ function walkTreeVars(tree: Program) {
 
 function walkTreeCheckErrors(tree: Program, errors: FPError[]) {
 	walkAddParent(tree, node => {
+		if (!node || !node.type) return;
 		switch (node.type) {
 			case 'AssignmentExpression':
 			case 'UpdateExpression':
