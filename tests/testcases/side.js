@@ -55,9 +55,9 @@ test('Simple pure functions: no false positives', t => {
 
 test('Side cause detection', t => {
 	let report = doReport('side-causes');
-	hasErrors(t, report, 'sideCause', 2, ErrorType.ReadNonLocal);
+	hasErrors(t, report, 'sideCause', 3, ErrorType.ReadNonLocal);
 	hasErrors(t, report, 'sideCauseThis', 2, ErrorType.ReadThis);
-	t.equal(report.errors.length, 4, 'No unexpected errors');
+	t.equal(report.errors.length, 5, 'No unexpected errors');
 	t.end();
 });
 
@@ -68,7 +68,8 @@ test('Side effect detection', t => {
 	hasErrors(t, report, 'assignToThis', 2, ErrorType.WriteThis);
 	hasErrors(t, report, 'changeGlobal', 1, ErrorType.WriteNonLocal);
 	hasErrors(t, report, 'nested/child', 1, ErrorType.WriteNonLocal);
-	t.equal(report.errors.length, 13, 'No unexpected errors');
+	hasErrors(t, report, 'strTemplate', 1, ErrorType.WriteNonLocal);
+	t.equal(report.errors.length, 14, 'No unexpected errors');
 	t.end();
 });
 

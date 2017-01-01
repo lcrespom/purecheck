@@ -32,6 +32,12 @@ function changeGlobal() {
 
 function nested() {
 	function child() {
+		// Should issue 1 side effect
 		foo = 3;
 	}
+}
+
+function strTemplate() {
+	// Should issue 1 side effect
+	return `Some string ${x++} template`;
 }

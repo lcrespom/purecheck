@@ -45,7 +45,6 @@ Purecheck is in a very early stage. Check ToDo section below for details.
 	- Cascading of side cause / side effects: make a second pass to detect invocation of functions with side causes/effects
 		- Should actually iterate until no new errors added (configurable)
 	- All branches should return some value
-	- Side causes and effects in `${expressions}` inside string templates
 	- Side cause: invocation of member function of object that is not a local variable nor a parameter. This is just one more case of ErrorType.ReadNonLocal.
 - Support all kinds of function definition
 	- Function expression

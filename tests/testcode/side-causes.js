@@ -7,6 +7,8 @@ function sideCause(x, y) {
 	a = z;
 	// Side cause: read from non-local member (2)
 	a = t.e[4].x;
+	// Side cause inside string template (3)
+	return `some interpolated ${foo} text`;
 }
 
 function sideCauseThis(x, y) {
