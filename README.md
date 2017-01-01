@@ -24,6 +24,8 @@ Purecheck generates a report listing all scanned functions along with their asso
 Purecheck is still under development. Check ToDo section below for details.
 
 ## Rules for pure functions
+This list provides more detail about the rules mentioned above:
+
 1. Should not have side causes, i.e., should not:
 	1. Read a non-local variable
 	2. Read from `this`
@@ -35,7 +37,8 @@ Purecheck is still under development. Check ToDo section below for details.
 	4. Invoke a function with side effects (pending - requires multiple passes)
 3. Should not invoke a function from a blacklist of non-pure functions (pending)
 4. Alternatively, should only invoke its own pure functions and functions in a whitelist of safe functions (pending)
-5. Pure functions should explicitly return some value. Otherwise, if they don't have side effects and return nothing, they are useless and their invocation can be replaced by `undefined` (pending)
+5. The `throw` statement is not allowed within pure functions
+6. Pure functions should explicitly return some value. Otherwise, if they don't have side effects and return nothing, they are useless and their invocation can be replaced by `undefined` (pending)
 
 
 ## ToDo
