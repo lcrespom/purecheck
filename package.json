@@ -1,6 +1,6 @@
 {
   "name": "Purecheck",
-  "version": "0.0.1",
+  "version": "1.0",
   "description": "Checks JS code for pure functions",
   "main": "bin/purecheck.js",
   "scripts": {
@@ -10,6 +10,10 @@
   },
   "bin": {
     "purecheck": "bin/purecheck"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lcrespom/purecheck.git"
   },
   "author": "Luis Crespo",
   "license": "ISC",
