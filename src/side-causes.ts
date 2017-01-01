@@ -28,8 +28,9 @@ function fpError(node: Identifier | ThisExpression): FPError | null {
 function skipSideCause(node): boolean {
 	if (!node.parent) return true;
 	switch (node.parent.type) {
-		// Skip function declaration identifiers
+		// Skip function declaration/expression identifiers
 		case 'FunctionDeclaration':
+		case 'FunctionExpression':
 			return true;
 		// Skip function invocations (to be checked elsewhere)
 		case 'CallExpression':

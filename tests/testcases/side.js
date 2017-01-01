@@ -119,6 +119,15 @@ test('Code outside functions should be ignored', t => {
 	t.end();
 });
 
+test('Function expressions', t => {
+	let report = doReport('func-expr');
+	t.equal(report.errors.length, 4, 'Detect all errors');
+	hasErrors(t, report, '<anonymous-1>', 1, ErrorType.WriteNonLocal);
+	hasErrors(t, report, '<anonymous-2>', 1, ErrorType.ReadNonLocal);
+	hasErrors(t, report, '<anonymous-3>', 1, ErrorType.ReadNonLocal);
+	t.end();
+});
+
 test('Cascade: detect invocation to own non-pure functions', t => {
 	let report = doReport('cascade');
 	// Side causes
@@ -132,11 +141,5 @@ test('Cascade: detect invocation to own non-pure functions', t => {
 	hasErrors(t, report, 'callSideEffects', 2, ErrorType.InvokeSideEffects);
 	hasErrors(t, report, 'callCallSideEffects', 1, ErrorType.InvokeSideEffects);
 	t.equal(report.errors.length, 10, 'No unexpected errors');
-	t.end();
-});
-
-test('Function expressions', t => {
-	let report = doReport('func-expr');
-	t.equal(report.errors.length, 4, 'Detect all errors');
 	t.end();
 });

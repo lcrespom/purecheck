@@ -71,7 +71,6 @@ function errorReport(errors: FPError[]): FPErrorReport {
 }
 
 function groupByFunction(errors: FPError[]): FunctionTable {
-	// TODO path function names by scope
 	let funcs: FunctionTable = {};
 	for (let e of errors) {
 		let name = fname(e.fnode);
@@ -82,8 +81,17 @@ function groupByFunction(errors: FPError[]): FunctionTable {
 	return funcs;
 }
 
+let act = 1;
+
 function fname(node): string {
-	let name = node.id.name;
+	let name;
+	if (node.id) {
+		name = node.id.name;
+	}
+	else {
+		name = `<anonymous-${act}>`;
+		act++;
+	}
 	let pf = findParentFunction(node);
 	if (pf)
 		name = fname(pf) + '/' + name;
@@ -173,21 +181,20 @@ function addError(errors, e) {
 	if (e) errors.push(e);
 }
 
-// TODO curry this function
 export function findParent(predicate, node) {
 	if (!node.parent) return null;
 	if (predicate(node.parent)) return node.parent;
 	return findParent(predicate, node.parent);
 }
 
-// TODO const findParentFunction = findParent(n => n.fp_data)
 export function findParentFunction(node) {
 	return findParent(
-		n => n.type == 'FunctionDeclaration',
+		n => n.type == 'FunctionDeclaration'
+			|| n.type == 'FunctionExpression'
+			|| n.type == 'ArrowFunctionExpression',
 		node);
 }
 
-// TODO const findParentBlock = findParent(n => n.type == 'BlockStatement')
 export function findParentBlock(node) {
 	return findParent(n => n.type == 'BlockStatement', node);
 }

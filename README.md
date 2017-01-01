@@ -38,7 +38,6 @@ Purecheck is in a very early stage. Check ToDo section below for details.
 
 ## ToDo
 - Make `main.ts` useful
-	- Improve report
 	- Parameters / configuration
 	- Make it available in ./bin, see http://blog.npmjs.org/post/118810260230/building-a-simple-command-line-tool-with-npm
 - Check for:
@@ -46,9 +45,6 @@ Purecheck is in a very early stage. Check ToDo section below for details.
 		- Should actually iterate until no new errors added (configurable)
 	- All branches should return some value
 	- Side cause: invocation of member function of object that is not a local variable nor a parameter. This is just one more case of ErrorType.ReadNonLocal.
-- Support all kinds of function definition
-	- Function expression
-	- Arrow function expression
 - Function blacklist / whitelist
 - Support ES6-style params: defaults, rest and destructuring
 - Check for source maps, and if present, use them to translate error locations. This would provide support for TypeScript (and potentially other similar languages)
