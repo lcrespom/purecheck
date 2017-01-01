@@ -58,6 +58,7 @@ This list provides more detail about the rules mentioned above:
 	- Cascading of side cause / side effects: make a second pass to detect invocation of functions with side causes/effects
 		- Should actually iterate until no new errors added (configurable)
 	- All branches should return some value
+- Test it with big, real-world JS files to ensure it does not crash
 - Function blacklist / whitelist
 - Support ES6-style params: defaults, rest and destructuring
 - Check for source maps, and if present, use them to translate error locations. This would provide support for TypeScript (and potentially other similar languages)
