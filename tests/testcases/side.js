@@ -128,6 +128,14 @@ test('Function expressions', t => {
 	t.end();
 });
 
+test('Throw statements', t => {
+	let report = doReport('throws');
+	t.equal(report.errors.length, 2, 'Detect all errors');
+	hasErrors(t, report, 'simpleThrow', 1, ErrorType.Throw);
+	hasErrors(t, report, 'nestedThrow', 1, ErrorType.Throw);
+	t.end();
+});
+
 test('Cascade: detect invocation to own non-pure functions', t => {
 	let report = doReport('cascade');
 	// Side causes

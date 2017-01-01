@@ -17,9 +17,12 @@ export enum ErrorType {
 	// Side effects:
 	WriteNonLocal,
 	WriteThis,
-	InvokeSideEffects
+	InvokeSideEffects,
 	// Invoking a function with side effects (according to previous scan)
 	// Invoking a function from a blacklist / not in whitelist
+	// Other:
+	Throw,
+	MissingReturn
 }
 
 export interface FPError {
@@ -52,7 +55,7 @@ function purecheck(code: string): FPErrorReport {
 	});
 	let errors = [];
 	walkTreeVars(tree);
-	walkTreeSideEC(tree, errors);
+	walkTreeCheckErrors(tree, errors);
 	// TODO make a second pass to detect invocation of impure functions
 	return errorReport(errors);
 }
@@ -140,7 +143,7 @@ function walkTreeVars(tree: Program) {
 	});
 }
 
-function walkTreeSideEC(tree: Program, errors: FPError[]) {
+function walkTreeCheckErrors(tree: Program, errors: FPError[]) {
 	walkAddParent(tree, node => {
 		switch (node.type) {
 			case 'AssignmentExpression':
@@ -149,6 +152,8 @@ function walkTreeSideEC(tree: Program, errors: FPError[]) {
 			case 'Identifier':
 			case 'ThisExpression':
 				return checkIdentifier(node, errors);
+			case 'ThrowStatement':
+				return checkThrow(node, errors);
 		}
 	});
 }
@@ -174,10 +179,20 @@ function checkIdentifier(node, errors: FPError[]) {
 	addError(errors, checkSideCause(node, localsAndParams));
 }
 
+function checkThrow(node, errors: FPError[]) {
+	let fnode = findParentFunction(node);
+	if (!fnode) return;
+	addError(errors, {
+		type: ErrorType.Throw,
+		ident: 'throw',
+		node,
+		fnode
+	});
+}
 
 // --------------- Walk tree helpers ---------------
 
-function addError(errors, e) {
+function addError(errors, e: FPError | null) {
 	if (e) errors.push(e);
 }
 

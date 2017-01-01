@@ -8,6 +8,8 @@ For a function to be pure, it must:
 - Have no side causes, i.e.:
   - Depend exclusively on the input parameters. Accessing variables from other scopes depends on side causes.
   - Only invoke functions that have no side causes.
+- Never `throw` any error: pure functions do not break the execution flow
+- Should always return some value: given that pure functions have no side effects, if they don't return any value, they are totally useless anyway.
 
 Purecheck generates a report listing all scanned functions along with their associated side causes and side effects. It uses [Esprima](http://esprima.org/) to do the parsing.
 
@@ -19,7 +21,7 @@ Purecheck generates a report listing all scanned functions along with their asso
 `npm start < file_to_check.js`
 
 ## Notice
-Purecheck is in a very early stage. Check ToDo section below for details.
+Purecheck is still under development. Check ToDo section below for details.
 
 ## Rules for pure functions
 1. Should not have side causes, i.e., should not:
