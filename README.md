@@ -18,7 +18,17 @@ Purecheck generates a report listing all scanned functions along with their asso
 - Build: `npm run build`
 
 ## Usage
-`npm start < file_to_check.js`
+- If you have installed it via `npm install purecheck`:
+	- `purecheck file_to_check.js`
+- If you have cloned the repository:
+	- `npm start file_to_check.js`
+
+If no file is specified, purecheck will read from the standard input. This allows piping the output of another command, e.g. a transpile step.
+
+### Command-line parameters
+- `--tabsize`, `-t`: purecheck reports errors specifying the line and column of the offending code. When the JS file has tabs, the column position may not be reported correctly, so this parameter can be used to specify the number of spaces used by a tab. The default value is 4 spaces per tab.
+	- Example: `purecheck --tabsize 3`
+
 
 ## Notice
 Purecheck is still under development. Check ToDo section below for details.
@@ -51,3 +61,5 @@ This list provides more detail about the rules mentioned above:
 - Function blacklist / whitelist
 - Support ES6-style params: defaults, rest and destructuring
 - Check for source maps, and if present, use them to translate error locations. This would provide support for TypeScript (and potentially other similar languages)
+- ESLint plugin and rule, so it can be used from the ESLint tool, especially when integrated in editors/IDEs such as Visual Studio Code.
+- Improve tab expansion implementation so it adds only the spaces remaining to the next tab position.
