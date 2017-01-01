@@ -31,7 +31,7 @@ If no file is specified, purecheck will read from the standard input. This allow
 
 
 ## Notice
-Purecheck is still under development. Check ToDo section below for details.
+Purecheck is still under development. Check the ToDo section below for details.
 
 ## Rules for pure functions
 This list provides more detail about the rules mentioned above:
