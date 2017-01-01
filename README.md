@@ -27,15 +27,15 @@ Purecheck is still under development. Check ToDo section below for details.
 1. Should not have side causes, i.e., should not:
 	1. Read a non-local variable
 	2. Read from `this`
-	3. Invoke a function with side causes (requires multiple passes)
+	3. Invoke a function with side causes (pending - requires multiple passes)
 2. Should not have side effects, i.e., should not:
 	1. Write to a non-local variable
 	2. Write to a parameter
 	3. Write to `this`
-	4. Invoke a function with side effects (requires multiple passes)
-3. Should not invoke a function from a blacklist of non-pure functions
-4. Alternatively, should only invoke its own pure functions and functions in a whitelist of safe functions
-5. Pure functions should explicitly return some value. Otherwise, if they don't have side effects and return nothing, they are useless and their invocation can be replaced by `undefined`.
+	4. Invoke a function with side effects (pending - requires multiple passes)
+3. Should not invoke a function from a blacklist of non-pure functions (pending)
+4. Alternatively, should only invoke its own pure functions and functions in a whitelist of safe functions (pending)
+5. Pure functions should explicitly return some value. Otherwise, if they don't have side effects and return nothing, they are useless and their invocation can be replaced by `undefined` (pending)
 
 
 ## ToDo
