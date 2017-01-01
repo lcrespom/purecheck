@@ -1,11 +1,11 @@
 {
   "name": "Purecheck",
-  "version": "1.0",
+  "version": "1.0.0",
   "description": "Checks JS code for pure functions",
-  "main": "bin/purecheck.js",
+  "main": "lib/purecheck.js",
   "scripts": {
     "build": "tsc",
-    "start": "node bin/main",
+    "start": "node bin/purecheck",
     "test": "node tests/testcases/side | faucet"
   },
   "bin": {
