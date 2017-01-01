@@ -58,6 +58,7 @@ This list provides more detail about the rules mentioned above:
 	- Cascading of side cause / side effects: make a second pass to detect invocation of functions with side causes/effects
 		- Should actually iterate until no new errors added (configurable)
 	- All branches should return some value
+- Add JS standard object types as valid globals: Object, Array, Number, etc.
 - Test it with big, real-world JS files to ensure it does not crash
 - Function blacklist / whitelist
 - Support ES6-style params: defaults, rest and destructuring
