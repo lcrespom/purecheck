@@ -8,6 +8,9 @@
     "start": "node bin/main",
     "test": "node tests/testcases/side | faucet"
   },
+  "bin": {
+    "purecheck": "bin/purecheck"
+  },
   "author": "Luis Crespo",
   "license": "ISC",
   "devDependencies": {

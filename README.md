@@ -42,9 +42,8 @@ This list provides more detail about the rules mentioned above:
 
 
 ## ToDo
-- Make `main.ts` useful
+- Improve CLI
 	- Parameters / configuration
-	- Make it available in ./bin, see http://blog.npmjs.org/post/118810260230/building-a-simple-command-line-tool-with-npm
 - Check for:
 	- Cascading of side cause / side effects: make a second pass to detect invocation of functions with side causes/effects
 		- Should actually iterate until no new errors added (configurable)
