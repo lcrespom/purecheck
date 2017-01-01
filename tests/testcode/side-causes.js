@@ -19,6 +19,13 @@ function sideCauseThis(x, y) {
 	a = this.b[4];
 }
 
+function objLiteral() {
+	// Side cause: read from non-local 'bar' (1)
+	return {
+		foo: bar
+	}
+}
+
 function noErrorsHere(x, y) {
 	x.fooBar();
 	return x[y];

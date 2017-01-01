@@ -28,6 +28,11 @@ function fpError(node: Identifier | ThisExpression): FPError | null {
 function skipSideCause(node, level: number): boolean {
 	if (!node.parent) return true;
 	switch (node.parent.type) {
+		// Skip object properties
+		case 'Property':
+			return node == node.parent.key
+				&& node.parent.parent
+				&& node.parent.parent.type == 'ObjectExpression';
 		// Skip function declaration/expression identifiers
 		case 'FunctionDeclaration':
 		case 'FunctionExpression':

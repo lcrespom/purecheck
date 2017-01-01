@@ -20,3 +20,12 @@ function closure(pOut) {
 		l = 5;
 	}
 }
+
+function objLiteral(a) {
+	return {
+		a,
+		b: 1,
+		c: true,
+		d: 'yeah'
+	}
+}
