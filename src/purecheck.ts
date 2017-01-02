@@ -41,12 +41,11 @@ export enum ErrorType {
 	// Side causes
 	ReadNonLocal,
 	ReadThis,
-	InvokeSideCauses,
 	// Side effects:
 	WriteNonLocal,
 	WriteThis,
-	InvokeSideEffects,
 	// Others:
+	InvokeImpure,
 	Throw,
 	MissingReturn,
 	InvokeBlacklisted,
@@ -58,6 +57,7 @@ export interface FPError {
 	ident: string;
 	node: Node;
 	fnode: FunctionDeclaration;
+	fname?: string;
 }
 
 export interface FunctionReport {
@@ -66,7 +66,7 @@ export interface FunctionReport {
 	errors: FPError[];
 }
 
-type FunctionTable = { [fname: string]: FunctionReport; }
+type FunctionTable = { [fname: string]: FunctionReport; };
 
 export interface FPErrorReport {
 	errors: FPError[];
@@ -86,17 +86,11 @@ function purecheck(code: string,
 	let errors = [];
 	walkTreeVars(tree);
 	walkTreeCheckErrors(tree, errors, new Set(globals));
-	// TODO make a second pass to detect invocation of impure functions
+	walkTreeCheckImpureFunctions(tree, errors);
 	return errorReport(errors);
 }
 
 function errorReport(errors: FPError[]): FPErrorReport {
-	errors.sort((e1, e2) => {
-		if (!e1.node.loc || !e2.node.loc) return 0;
-		let dline = e1.node.loc.start.line - e2.node.loc.start.line;
-		if (dline) return dline;
-		return e1.node.loc.start.column - e2.node.loc.start.column;
-	});
 	return {
 		errors,
 		functions: groupByFunction(errors)
@@ -106,29 +100,13 @@ function errorReport(errors: FPError[]): FPErrorReport {
 function groupByFunction(errors: FPError[]): FunctionTable {
 	let funcs: FunctionTable = {};
 	for (let e of errors) {
-		let name = fname(e.fnode);
+		let name = e.fname;
+		if (!name) continue;
 		if (!funcs[name])
 			funcs[name] = { name, errors: [], loc: e.fnode.loc };
 		funcs[name].errors.push(e);
 	}
 	return funcs;
-}
-
-let act = 1;
-
-function fname(node): string {
-	let name;
-	if (node.id) {
-		name = node.id.name;
-	}
-	else {
-		name = `<anonymous-${act}>`;
-		act++;
-	}
-	let pf = findParentFunction(node);
-	if (pf)
-		name = fname(pf) + '/' + name;
-	return name;
 }
 
 
@@ -174,6 +152,19 @@ function walkTreeVars(tree: Program) {
 	});
 }
 
+function initBlock(node) {
+	node.fp_parent_function = findParentFunction(node);
+	node.fp_locals = new Set<string>();
+}
+
+function addLocalVar(node) {
+	let block = findParentBlock(node);
+	if (!block || !block.fp_parent_function) return;
+	if (!node.id || !node.id.name) return;
+	block.fp_locals.add(node.id.name);
+}
+
+
 function walkTreeCheckErrors(tree: Program, errors: FPError[], globals: Set<string>) {
 	walkAddParent(tree, node => {
 		if (!node || !node.type) return;
@@ -188,18 +179,6 @@ function walkTreeCheckErrors(tree: Program, errors: FPError[], globals: Set<stri
 				return checkThrow(node, errors);
 		}
 	});
-}
-
-function initBlock(node) {
-	node.fp_parent_function = findParentFunction(node);
-	node.fp_locals = new Set<string>();
-}
-
-function addLocalVar(node) {
-	let block = findParentBlock(node);
-	if (!block || !block.fp_parent_function) return;
-	if (!node.id || !node.id.name) return;
-	block.fp_locals.add(node.id.name);
 }
 
 function checkAssignOrUpdate(node, errors: FPError[]) {
@@ -223,6 +202,71 @@ function checkThrow(node, errors: FPError[]) {
 		fnode
 	});
 }
+
+
+function walkTreeCheckImpureFunctions(tree: Program, errors: FPError[]) {
+	let nerrs;
+	do {
+		nerrs = errors.length;
+		errors.sort(compareErrorLocations);
+		setFunctionNames(errors);
+		let impures: Set<string> = errors.reduce(
+			(impures, e) => e.fname ? impures.add(e.fname) : impures,
+			new Set<string>()
+		);
+		walkAddParent(tree, node => checkCallExpression(node, errors, impures));
+	} while (nerrs < errors.length);
+}
+
+function checkCallExpression(node, errors: FPError[], impures: Set<string>) {
+	if (node.type == 'Identifier'
+		&& node.parent
+		&& node.parent.type == 'CallExpression'
+		&& !node.fp_error
+		&& node.name
+		// TODO calculate path of invoked function
+		&& impures.has(node.name)) {
+			let e: FPError = {
+				type: ErrorType.InvokeImpure,
+				ident: node.name,
+				node,
+				fnode: findParentFunction(node)
+			};
+			errors.push(e);
+			node.fp_error = e;
+		}
+}
+
+function compareErrorLocations(e1: FPError, e2: FPError) {
+	if (!e1.node.loc || !e2.node.loc) return 0;
+	let dline = e1.node.loc.start.line - e2.node.loc.start.line;
+	if (dline) return dline;
+	return e1.node.loc.start.column - e2.node.loc.start.column;
+}
+
+function setFunctionNames(errors: FPError[]) {
+	for (let e of errors)
+		if (!e.fname)
+			e.fname = fname(e.fnode);
+}
+
+let act = 1;
+
+function fname(node): string {
+	let name;
+	if (node.id) {
+		name = node.id.name;
+	}
+	else {
+		name = `<anonymous-${act}>`;
+		act++;
+	}
+	let pf = findParentFunction(node);
+	if (pf)
+		name = fname(pf) + '/' + name;
+	return name;
+}
+
 
 
 // --------------- Helpers ---------------

@@ -39,26 +39,24 @@ This list provides more detail about the rules mentioned above:
 1. Should not have side causes, i.e., should not:
 	1. Read a non-local variable
 	2. Read from `this`
-	3. Invoke a function with side causes (pending - requires multiple passes)
 2. Should not have side effects, i.e., should not:
 	1. Write to a non-local variable
 	2. Write to a parameter
 	3. Write to `this`
-	4. Invoke a function with side effects (pending - requires multiple passes)
-3. Should not invoke a function from a blacklist of non-pure functions (pending)
-4. Alternatively, should only invoke its own pure functions and functions in a whitelist of safe functions (pending)
-5. The `throw` statement is not allowed within pure functions
-6. Pure functions should explicitly return some value. Otherwise, if they don't have side effects and return nothing, they are useless and their invocation can be replaced by `undefined` (pending)
+3. Should not invoke impure functions
+4. Should not invoke a function from a blacklist of non-pure functions (pending)
+5. Alternatively, should only invoke its own pure functions and functions in a whitelist of safe functions (pending)
+6. The `throw` statement is not allowed within pure functions
+7. Pure functions should explicitly return some value. Otherwise, if they don't have side effects and return nothing, they are useless and their invocation can be replaced by `undefined` (pending)
 
 
 ## ToDo
 - Improve CLI
 	- Read configuration from purecheck.json
 - Check for:
-	- Cascading of side cause / side effects: make a second pass to detect invocation of functions with side causes/effects
-		- Should actually iterate until no new errors added
 	- All branches should return some value
 - Test it with big, real-world JS files to ensure it does not crash
+- Catch invocation of nested impure functions
 - Function blacklist / whitelist
 - Support ES6-style params: defaults, rest and destructuring
 - Check for source maps, and if present, use them to translate error locations. This would provide support for TypeScript (and potentially other similar languages)
