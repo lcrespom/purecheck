@@ -5,6 +5,36 @@ import { checkSideEffect } from './side-effects';
 import { checkSideCause } from './side-causes';
 
 
+// See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects
+const OPT_GLOBALS = [
+	// Value properties
+	'Infinity', 'NaN', 'undefined',
+	// Fundamental objects
+	'Object', 'Function', 'Boolean', 'Symbol', 'Error', 'EvalError',
+	'InternalError', 'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError',
+	'URIError',
+	// Numbers and dates
+	'Number', 'Math', 'Date',
+	// Text processing
+	'String', 'RegExp',
+	// Indexed collections
+	'Array', 'Int8Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array',
+	'Uint16Array', 'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array',
+	// Keyed collections
+	'Map', 'Set', 'WeakMap', 'WeakSet',
+	// Structured data
+	'ArrayBuffer', 'DataView', 'JSON',
+	// Control abstraction objects
+	'Promise', 'Generator', 'GeneratorFunction',
+	// Reflection
+	'Reflect', 'Proxy',
+	// Internationalization
+	'Intl',
+	// Other
+	'arguments'
+];
+
+
 export default purecheck;
 
 export enum ErrorType {
@@ -45,9 +75,11 @@ export interface FPErrorReport {
 	functions: FunctionTable;
 }
 
+
 // -------------------- Main --------------------
 
-function purecheck(code: string): FPErrorReport {
+function purecheck(code: string,
+	{ globals = OPT_GLOBALS } = {}): FPErrorReport {
 	let tree = esprima.parse(code, {
 		loc: true,
 		comment: true,
@@ -55,7 +87,7 @@ function purecheck(code: string): FPErrorReport {
 	});
 	let errors = [];
 	walkTreeVars(tree);
-	walkTreeCheckErrors(tree, errors);
+	walkTreeCheckErrors(tree, errors, new Set(globals));
 	// TODO make a second pass to detect invocation of impure functions
 	return errorReport(errors);
 }
@@ -144,7 +176,7 @@ function walkTreeVars(tree: Program) {
 	});
 }
 
-function walkTreeCheckErrors(tree: Program, errors: FPError[]) {
+function walkTreeCheckErrors(tree: Program, errors: FPError[], globals: Set<string>) {
 	walkAddParent(tree, node => {
 		if (!node || !node.type) return;
 		switch (node.type) {
@@ -153,7 +185,7 @@ function walkTreeCheckErrors(tree: Program, errors: FPError[]) {
 				return checkAssignOrUpdate(node, errors);
 			case 'Identifier':
 			case 'ThisExpression':
-				return checkIdentifier(node, errors);
+				return checkIdentifier(node, errors, globals);
 			case 'ThrowStatement':
 				return checkThrow(node, errors);
 		}
@@ -176,7 +208,9 @@ function checkAssignOrUpdate(node, errors: FPError[]) {
 	addError(errors, checkSideEffect(node, mergeLocals(node)));
 }
 
-function checkIdentifier(node, errors: FPError[]) {
+function checkIdentifier(node, errors: FPError[], globals: Set<string>) {
+	if (node.type == 'Identifier'
+		&& globals.has(node.name)) return;
 	let localsAndParams = mergeSets(mergeLocals(node), mergeParams(node));
 	addError(errors, checkSideCause(node, localsAndParams));
 }
@@ -192,7 +226,8 @@ function checkThrow(node, errors: FPError[]) {
 	});
 }
 
-// --------------- Walk tree helpers ---------------
+
+// --------------- Helpers ---------------
 
 function addError(errors, e: FPError | null) {
 	if (e) errors.push(e);

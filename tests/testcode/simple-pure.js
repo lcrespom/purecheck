@@ -29,3 +29,9 @@ function objLiteral(a) {
 		d: 'yeah'
 	}
 }
+
+function globalObjects(x) {
+	if (x instanceof Array) {
+		return JSON.stringify(Object.toString());
+	}
+}
