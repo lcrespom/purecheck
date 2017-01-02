@@ -41,3 +41,12 @@ function callCallSideEffects() {
 	// Third-pass side effect
 	callSideEffects();
 }
+
+//--------------- Nested functions ---------------
+
+/*
+function outer() {
+	function innerSE() { a++; }
+	innerSE();
+}
+*/

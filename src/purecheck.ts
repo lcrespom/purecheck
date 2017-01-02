@@ -140,6 +140,9 @@ function walkAddParent(ast, fn) {
 	}
 }
 
+
+// -------------------- First pass: gather local variables --------------------
+
 function walkTreeVars(tree: Program) {
 	walkAddParent(tree, node => {
 		if (!node || !node.type) return;
@@ -164,6 +167,8 @@ function addLocalVar(node) {
 	block.fp_locals.add(node.id.name);
 }
 
+
+// --------------- Second pass: look for impure functions ---------------
 
 function walkTreeCheckErrors(tree: Program, errors: FPError[], globals: Set<string>) {
 	walkAddParent(tree, node => {
@@ -203,6 +208,8 @@ function checkThrow(node, errors: FPError[]) {
 	});
 }
 
+
+// ---------- Third pass, iterative: look for calls to impure functions ----------
 
 function walkTreeCheckImpureFunctions(tree: Program, errors: FPError[]) {
 	let nerrs;
@@ -266,7 +273,6 @@ function fname(node): string {
 		name = fname(pf) + '/' + name;
 	return name;
 }
-
 
 
 // --------------- Helpers ---------------
