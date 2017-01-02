@@ -1,22 +1,25 @@
 {
-  "name": "Purecheck",
+  "name": "purecheck",
   "version": "1.0.0",
   "description": "Checks JS code for pure functions",
-  "main": "lib/purecheck.js",
-  "scripts": {
-    "build": "tsc",
-    "start": "node bin/purecheck",
-    "test": "node tests/testcases/side | faucet"
-  },
-  "bin": {
-    "purecheck": "bin/purecheck"
-  },
+  "keywords": [
+    "pure", "functional", "javascript", "verify"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lcrespom/purecheck.git"
   },
   "author": "Luis Crespo",
   "license": "ISC",
+  "main": "lib/purecheck.js",
+  "bin": {
+    "purecheck": "bin/purecheck"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node bin/purecheck",
+    "test": "node tests/testcases/side | faucet"
+  },
   "devDependencies": {
     "@types/esprima": "^2.1.33",
     "@types/node": "^6.0.52",
