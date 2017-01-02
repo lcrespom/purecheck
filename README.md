@@ -53,10 +53,10 @@ This list provides more detail about the rules mentioned above:
 
 ## ToDo
 - Improve CLI
-	- Parameters / configuration
+	- Read configuration from purecheck.json
 - Check for:
 	- Cascading of side cause / side effects: make a second pass to detect invocation of functions with side causes/effects
-		- Should actually iterate until no new errors added (configurable)
+		- Should actually iterate until no new errors added
 	- All branches should return some value
 - Test it with big, real-world JS files to ensure it does not crash
 - Function blacklist / whitelist
