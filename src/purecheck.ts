@@ -42,17 +42,15 @@ export enum ErrorType {
 	ReadNonLocal,
 	ReadThis,
 	InvokeSideCauses,
-	// Invoking a function with side causes (according to previous scan)
-	// Invoking a function from a blacklist / not in whitelist
 	// Side effects:
 	WriteNonLocal,
 	WriteThis,
 	InvokeSideEffects,
-	// Invoking a function with side effects (according to previous scan)
-	// Invoking a function from a blacklist / not in whitelist
-	// Other:
+	// Others:
 	Throw,
-	MissingReturn
+	MissingReturn,
+	InvokeBlacklisted,
+	InvokeNotWhitelisted
 }
 
 export interface FPError {
