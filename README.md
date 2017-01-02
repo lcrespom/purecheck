@@ -55,9 +55,9 @@ This list provides more detail about the rules mentioned above:
 	- Read configuration from purecheck.json
 - Check for:
 	- All branches should return some value
+	- Function blacklist / whitelist
 - Test it with big, real-world JS files to ensure it does not crash
 - Catch invocation of nested impure functions
-- Function blacklist / whitelist
 - Support ES6-style params: defaults, rest and destructuring
 - Check for source maps, and if present, use them to translate error locations. This would provide support for TypeScript (and potentially other similar languages)
 - ESLint plugin and rule, so it can be used from the ESLint tool, especially when integrated in editors/IDEs such as Visual Studio Code.
