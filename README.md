@@ -25,6 +25,10 @@ Purecheck generates a report listing all scanned functions along with their asso
 
 If no file is specified, purecheck will read from the standard input. This allows piping the output of another command, e.g. a transpile step.
 
+### ESLint plugin
+There is an [ESLint plugin](https://github.com/lcrespom/eslint-plugin-purecheck) available, so purecheck can be used from the ESLint tool. This is especially useful when integrated in editors/IDEs such as Visual Studio Code.
+
+
 ### Command-line parameters
 - `--tabsize`, `-t`: purecheck reports errors specifying the line and column of the offending code. When the JS file has tabs, the column position may not be reported correctly, so this parameter can be used to specify the number of spaces used by a tab. The default value is 4 spaces per tab.
 	- Example: `purecheck --tabsize 3`
@@ -60,5 +64,4 @@ This list provides more detail about the rules mentioned above:
 - Catch invocation of nested impure functions
 - Support ES6-style params: defaults, rest and destructuring
 - Check for source maps, and if present, use them to translate error locations. This would provide support for TypeScript (and potentially other similar languages)
-- ESLint plugin and rule, so it can be used from the ESLint tool, especially when integrated in editors/IDEs such as Visual Studio Code.
 - Improve tab expansion implementation so it adds only the spaces remaining to the next tab position.
