@@ -83,6 +83,10 @@ function purecheck(code: string,
 		comment: true,
 		sourceType: 'module',
 	});
+	return checkTree(tree, globals);
+}
+
+export function checkTree(tree, globals: string[]): FPErrorReport {
 	let errors = [];
 	walkTreeVars(tree);
 	walkTreeCheckErrors(tree, errors, new Set(globals));
